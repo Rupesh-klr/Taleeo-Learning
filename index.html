@@ -1,0 +1,3423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TALeeO LMS — Learning Management System</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg: #06060f;
+      --bg2: #0a0a1a;
+      --bg3: #0f0f24;
+      --panel: rgba(255, 255, 255, 0.04);
+      --panel2: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-v: rgba(124, 58, 237, 0.28);
+      --v1: #7c3aed;
+      --v2: #a78bfa;
+      --v3: #c4b5fd;
+      --b1: #3b82f6;
+      --b2: #93c5fd;
+      --c1: #06b6d4;
+      --c2: #67e8f9;
+      --am: #f59e0b;
+      --gr: #10b981;
+      --ro: #f43f5e;
+      --txt: rgba(255, 255, 255, 0.88);
+      --muted: rgba(255, 255, 255, 0.52);
+      --dim: rgba(255, 255, 255, 0.24);
+      --sidebar: 200px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--v1);
+      border-radius: 4px;
+    }
+
+    /* ─── PAGE SYSTEM ─── */
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .full-page {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .full-page.active {
+      display: flex;
+    }
+
+    /* ─── BG ELEMENTS ─── */
+    .bg-orbs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: .18;
+    }
+
+    .bo1 {
+      width: 600px;
+      height: 600px;
+      background: var(--v1);
+      top: -200px;
+      left: -200px;
+      animation: orbAnim 20s ease-in-out infinite alternate;
+    }
+
+    .bo2 {
+      width: 400px;
+      height: 400px;
+      background: var(--b1);
+      bottom: -100px;
+      right: -100px;
+      animation: orbAnim 15s ease-in-out infinite alternate-reverse;
+    }
+
+    .bo3 {
+      width: 300px;
+      height: 300px;
+      background: var(--c1);
+      top: 40%;
+      left: 60%;
+      animation: orbAnim 18s ease-in-out infinite alternate;
+    }
+
+    @keyframes orbAnim {
+      from {
+        transform: translate(0, 0) scale(1);
+      }
+
+      to {
+        transform: translate(60px, 40px) scale(1.15);
+      }
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all .25s;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border-radius: 8px;
+    }
+
+    .btn-v {
+      background: linear-gradient(135deg, var(--v1), var(--b1));
+      color: white;
+      padding: 10px 20px;
+      font-size: .85rem;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, .35);
+    }
+
+    .btn-v:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(124, 58, 237, .5);
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: .76rem;
+    }
+
+    .btn-out {
+      background: transparent;
+      color: var(--v2);
+      border: 1px solid var(--border-v);
+      padding: 8px 16px;
+      font-size: .8rem;
+    }
+
+    .btn-out:hover {
+      background: rgba(124, 58, 237, .1);
+    }
+
+    .btn-danger {
+      background: rgba(244, 63, 94, .15);
+      color: #fda4af;
+      border: 1px solid rgba(244, 63, 94, .3);
+      padding: 7px 14px;
+      font-size: .76rem;
+    }
+
+    .btn-danger:hover {
+      background: rgba(244, 63, 94, .25);
+    }
+
+    .btn-success {
+      background: rgba(16, 185, 129, .15);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, .3);
+      padding: 7px 14px;
+      font-size: .76rem;
+    }
+
+    .btn-success:hover {
+      background: rgba(16, 185, 129, .25);
+    }
+
+    .btn-full {
+      width: 100%;
+      justify-content: center;
+      padding: 13px;
+    }
+
+    .btn-icon {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      justify-content: center;
+      align-items: center;
+      font-size: .9rem;
+    }
+
+    /* ─── FORMS ─── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .form-input {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 14px;
+      color: var(--txt);
+      font-family: 'Inter', sans-serif;
+      font-size: .9rem;
+      outline: none;
+      transition: all .25s;
+      width: 100%;
+    }
+
+    .form-input:focus {
+      border-color: rgba(124, 58, 237, .6);
+      background: rgba(124, 58, 237, .07);
+    }
+
+    .form-input::placeholder {
+      color: var(--dim);
+    }
+
+    select.form-input option {
+      background: #0f0f24;
+      color: white;
+    }
+
+    /* ─── CARDS ─── */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .card-sub {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ─── BADGES ─── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .63rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      border: 1px solid;
+    }
+
+    .badge-v {
+      border-color: var(--border-v);
+      color: var(--v2);
+      background: rgba(124, 58, 237, .1);
+    }
+
+    .badge-b {
+      border-color: rgba(59, 130, 246, .3);
+      color: var(--b2);
+      background: rgba(59, 130, 246, .08);
+    }
+
+    .badge-g {
+      border-color: rgba(16, 185, 129, .3);
+      color: #6ee7b7;
+      background: rgba(16, 185, 129, .08);
+    }
+
+    .badge-r {
+      border-color: rgba(244, 63, 94, .3);
+      color: #fda4af;
+      background: rgba(244, 63, 94, .08);
+    }
+
+    .badge-a {
+      border-color: rgba(245, 158, 11, .3);
+      color: #fde68a;
+      background: rgba(245, 158, 11, .08);
+    }
+
+    .badge-c {
+      border-color: rgba(6, 182, 212, .3);
+      color: var(--c2);
+      background: rgba(6, 182, 212, .08);
+    }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-wrap {
+      background: rgba(255, 255, 255, .08);
+      border-radius: 20px;
+      height: 7px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 20px;
+      transition: width .6s ease;
+    }
+
+    /* ─── STAT CARD ─── */
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: all .3s;
+    }
+
+    .stat-card:hover {
+      border-color: rgba(124, 58, 237, .3);
+      transform: translateY(-3px);
+    }
+
+    .stat-num {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.9rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      font-size: .72rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: .04em;
+    }
+
+    /* ─── TABLE ─── */
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .tbl th,
+    .tbl td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tbl th {
+      font-family: 'Poppins', sans-serif;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .tbl td {
+      font-size: .82rem;
+      color: var(--txt);
+    }
+
+    .tbl tbody tr:hover {
+      background: var(--panel);
+    }
+
+    .tbl tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ─── TABS ─── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, .04);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .22s;
+      color: var(--muted);
+    }
+
+    .tab.active {
+      background: var(--v1);
+      color: white;
+    }
+
+    .tab:hover:not(.active) {
+      background: rgba(255, 255, 255, .06);
+      color: var(--txt);
+    }
+
+    /* ═══════════════════════════════════════
+    LOGIN PAGE
+  ═══════════════════════════════════════ */
+    #login-page {
+      background: var(--bg);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-wrap {
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--v3), var(--c2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .login-logo-sub {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid var(--border-v);
+      border-radius: 20px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(124, 58, 237, .15);
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--v1), var(--c1), var(--v2), var(--b1));
+      background-size: 200% 100%;
+      animation: shimmer 4s linear infinite;
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: 200% center;
+      }
+    }
+
+    .login-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .login-sub {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .otp-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .otp-input {
+      width: 46px;
+      height: 46px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: white;
+      outline: none;
+      transition: all .25s;
+    }
+
+    .otp-input:focus {
+      border-color: rgba(124, 58, 237, .6);
+      background: rgba(124, 58, 237, .08);
+    }
+
+    .login-msg {
+      font-size: .78rem;
+      color: rgba(144, 202, 249, .8);
+      background: rgba(59, 130, 246, .08);
+      border: 1px solid rgba(59, 130, 246, .2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .login-msg.show {
+      display: block;
+    }
+
+    .login-msg.error {
+      color: #fda4af;
+      background: rgba(244, 63, 94, .08);
+      border-color: rgba(244, 63, 94, .2);
+    }
+
+    /* ═══════════════════════════════════════
+    APP SHELL (sidebar + content)
+  ═══════════════════════════════════════ */
+    #app-shell {
+      display: none;
+      min-height: 100vh;
+    }
+
+    #app-shell.active {
+      display: flex;
+    }
+
+    .sidebar {
+      width: var(--sidebar);
+      background: rgba(0, 0, 0, .4);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 50;
+      backdrop-filter: blur(20px);
+    }
+
+    .sidebar-logo {
+      padding: 20px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sb-logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: .95rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, var(--v3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sb-logo-sub {
+      font-size: .58rem;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .sb-section {
+      font-size: .58rem;
+      font-weight: 700;
+      color: var(--dim);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 8px 18px;
+      margin-top: 8px;
+    }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 500;
+      border-right: 2px solid transparent;
+    }
+
+    .sb-item:hover {
+      background: rgba(255, 255, 255, .04);
+      color: var(--txt);
+    }
+
+    .sb-item.active {
+      background: rgba(124, 58, 237, .12);
+      color: var(--v2);
+      border-right-color: var(--v1);
+    }
+
+    .sb-item-icon {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sb-user {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .sb-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+      font-size: .85rem;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .sb-name {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--txt);
+      line-height: 1.3;
+    }
+
+    .sb-role {
+      font-size: .62rem;
+      color: var(--muted);
+    }
+
+    .sb-logout {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: color .2s;
+      padding: 4px;
+    }
+
+    .sb-logout:hover {
+      color: var(--ro);
+    }
+
+    .main-content {
+      margin-left: var(--sidebar);
+      flex: 1;
+      padding: 24px 28px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -.02em;
+    }
+
+    .page-subtitle {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ─── TOPBAR ─── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, .3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(16px);
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .topbar-sub {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .notif-bell {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      background: var(--ro);
+      border-radius: 50%;
+      border: 1.5px solid var(--bg);
+    }
+
+    /* ─── GRID LAYOUTS ─── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .grid-auto {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    @media(max-width:1100px) {
+      .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-3 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media(max-width:800px) {
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ─── MODULE CARD ─── */
+    .module-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: all .3s;
+      cursor: pointer;
+    }
+
+    .module-card:hover {
+      border-color: rgba(124, 58, 237, .3);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(124, 58, 237, .12);
+    }
+
+    .mc-top {
+      padding: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mc-num {
+      font-size: .6rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .mc-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: .92rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .mc-bottom {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mc-topics {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .mc-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ─── DAY CARD (recordings) ─── */
+    .day-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all .3s;
+    }
+
+    .day-card:hover {
+      border-color: rgba(124, 58, 237, .25);
+    }
+
+    .dc-day {
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      color: var(--dim);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .dc-title {
+      font-size: .88rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .dc-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dc-dur {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    /* ─── CERTIFICATE ─── */
+    .cert-preview {
+      background: linear-gradient(135deg, #1a0a2e, #2d1060, #1877f2);
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+      border: 1px solid rgba(196, 168, 240, .2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cert-preview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--v1), var(--c1), var(--am), var(--c1), var(--v1));
+      background-size: 200% 100%;
+      animation: shimmer 4s linear infinite;
+    }
+
+    .cert-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .cert-course {
+      font-size: .75rem;
+      color: rgba(196, 168, 240, .8);
+      margin-bottom: 12px;
+    }
+
+    .cert-badge {
+      display: inline-block;
+      background: rgba(240, 192, 64, .15);
+      border: 1px solid rgba(240, 192, 64, .3);
+      color: #fde68a;
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* ─── ATTENDANCE ─── */
+    .att-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .att-present {
+      background: linear-gradient(90deg, var(--gr), #6ee7b7);
+    }
+
+    .att-absent {
+      background: rgba(244, 63, 94, .4);
+    }
+
+    /* ─── ZOOM CARD ─── */
+    .zoom-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, .1), rgba(124, 58, 237, .08));
+      border: 1px solid rgba(59, 130, 246, .22);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .zoom-live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: livePulse 1.5s infinite;
+      display: inline-block;
+    }
+
+    @keyframes livePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, .5);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+      }
+    }
+
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .65);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #0f0f24;
+      border: 1px solid var(--border-v);
+      border-radius: 18px;
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .modal-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, .08);
+      border: none;
+      color: var(--muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: rgba(244, 63, 94, .2);
+      color: #fda4af;
+    }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 500;
+      background: #0f0f24;
+      border: 1px solid var(--border-v);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: .82rem;
+      color: white;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      margin-right: 8px;
+    }
+
+    /* ─── CERT CANVAS ─── */
+    #cert-canvas {
+      display: none;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .anim-in {
+      animation: fadeUp .5s ease both;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform .3s;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- BG Orbs -->
+  <div class="bg-orbs">
+    <div class="bg-orb bo1"></div>
+    <div class="bg-orb bo2"></div>
+    <div class="bg-orb bo3"></div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"><span class="toast-icon">✅</span><span id="toast-msg"></span></div>
+
+  <!-- ═════════════════════════════════════
+     LOGIN PAGE
+═════════════════════════════════════ -->
+  <div id="login-page" class="full-page active">
+    <div class="login-wrap anim-in">
+      <div class="login-logo">
+        <div class="login-logo-text">TALeeO LMS</div>
+        <div class="login-logo-sub">Learning Management System</div>
+      </div>
+      <div class="login-card">
+
+        <!-- STEP 1: Email/Password -->
+        <div id="step-login">
+          <div class="login-title">Welcome back 👋</div>
+          <div class="login-sub">Sign in to your account to continue learning.</div>
+          <div id="login-msg" class="login-msg"></div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="login-email" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="login-pass" placeholder="Enter your password"
+              onkeydown="if(event.key==='Enter')doLogin()">
+          </div>
+          <button class="btn btn-v btn-full" onclick="doLogin()">Sign In →</button>
+          <p style="text-align:center;margin-top:16px;font-size:.75rem;color:var(--dim);">New student? You'll receive
+            credentials via email when enrolled.</p>
+        </div>
+
+        <!-- STEP 2: OTP Verification (first login) -->
+        <div id="step-otp" style="display:none;">
+          <div class="login-title">Verify Your Number 📱</div>
+          <div class="login-sub" id="otp-sub">Enter the 6-digit OTP sent to your registered mobile number.</div>
+          <div id="otp-msg" class="login-msg"></div>
+          <div class="otp-row" style="margin-bottom:20px;justify-content:center;">
+            <input class="otp-input" maxlength="1" oninput="otpInput(this,0)" id="otp0">
+            <input class="otp-input" maxlength="1" oninput="otpInput(this,1)" id="otp1">
+            <input class="otp-input" maxlength="1" oninput="otpInput(this,2)" id="otp2">
+            <input class="otp-input" maxlength="1" oninput="otpInput(this,3)" id="otp3">
+            <input class="otp-input" maxlength="1" oninput="otpInput(this,4)" id="otp4">
+            <input class="otp-input" maxlength="1" oninput="otpInput(this,5)" id="otp5">
+          </div>
+          <button class="btn btn-v btn-full" onclick="verifyOtp()">Verify OTP →</button>
+          <p style="text-align:center;margin-top:14px;font-size:.74rem;color:var(--dim);">Demo OTP: <strong
+              style="color:var(--v2);">123456</strong></p>
+        </div>
+
+      </div>
+      <p style="text-align:center;margin-top:16px;font-size:.72rem;color:var(--dim);">Admin: taleeolearnings@gmail.com /
+        admin123</p>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════
+     APP SHELL
+═════════════════════════════════════ -->
+  <div id="app-shell">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="sb-logo-text">TALeeO LMS</div>
+        <div class="sb-logo-sub" id="sb-role-badge">Loading...</div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Items injected by JS based on role -->
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sb-user">
+          <div class="sb-avatar" id="sb-avatar" style="background:linear-gradient(135deg,var(--v1),var(--b1))">U</div>
+          <div>
+            <div class="sb-name" id="sb-name">User</div>
+            <div class="sb-role" id="sb-role">Role</div>
+          </div>
+          <button class="sb-logout" onclick="doLogout()" title="Logout">⏻</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content" id="main-content">
+      <!-- Pages injected here -->
+    </div>
+
+  </div>
+
+  <!-- ═════════════════════════════════════
+     MODALS
+═════════════════════════════════════ -->
+
+  <!-- Add Student Modal -->
+  <div class="modal-overlay" id="modal-add-student">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('modal-add-student')">✕</button>
+      <div class="modal-title">Invite Student</div>
+      <div class="modal-sub">Enter the student's details. They'll receive login credentials via email automatically.
+      </div>
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="new-student-name"
+          placeholder="Student's full name"></div>
+      <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input"
+          id="new-student-email" placeholder="student@email.com"></div>
+      <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input"
+          id="new-student-phone" placeholder="+91 98765 43210"></div>
+      <div class="form-group"><label class="form-label">Assign Batch</label>
+        <select class="form-input" id="new-student-batch">
+          <option value="">Select batch</option>
+        </select>
+      </div>
+      <button class="btn btn-v btn-full" onclick="inviteStudent()">Send Invitation & Credentials →</button>
+    </div>
+  </div>
+
+  <!-- Add Batch Modal -->
+  <div class="modal-overlay" id="modal-add-batch">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('modal-add-batch')">✕</button>
+      <div class="modal-title">Create New Batch</div>
+      <div class="modal-sub">Set up a batch with schedule, Zoom link, and course duration.</div>
+      <div class="form-group"><label class="form-label">Batch Name</label><input class="form-input" id="new-batch-name"
+          placeholder="e.g. Weekend Batch April 2026"></div>
+      <div class="form-group"><label class="form-label">Batch Type</label>
+        <select class="form-input" id="new-batch-type">
+          <option value="weekend">Weekend Batch (Sat & Sun)</option>
+          <option value="weekday">Weekday Batch (Mon–Fri)</option>
+        </select>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-input"
+            id="new-batch-start"></div>
+        <div class="form-group"><label class="form-label">End Date</label><input type="date" class="form-input"
+            id="new-batch-end"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Session Timing</label><input class="form-input"
+          id="new-batch-timing" placeholder="e.g. 10:00 AM – 12:00 PM IST"></div>
+      <div class="form-group"><label class="form-label">Zoom Meeting Link</label><input class="form-input"
+          id="new-batch-zoom" placeholder="https://zoom.us/j/..."></div>
+      <div class="form-group"><label class="form-label">Zoom Meeting ID</label><input class="form-input"
+          id="new-batch-zoom-id" placeholder="123 456 7890"></div>
+      <div class="form-group"><label class="form-label">Passcode</label><input class="form-input"
+          id="new-batch-zoom-pass" placeholder="abc123"></div>
+      <button class="btn btn-v btn-full" onclick="createBatch()">Create Batch →</button>
+    </div>
+  </div>
+
+  <!-- Upload Document Modal -->
+  <div class="modal-overlay" id="modal-upload-doc">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('modal-upload-doc')">✕</button>
+      <div class="modal-title">Upload Document / Notes</div>
+      <div class="modal-sub">Documents will be visible to all students in the selected batch.</div>
+      <div class="form-group"><label class="form-label">Document Title</label><input class="form-input" id="doc-title"
+          placeholder="e.g. BRD Template – Week 1"></div>
+      <div class="form-group"><label class="form-label">Module</label>
+        <select class="form-input" id="doc-module">
+          <option value="Module 01">Module 01 – Foundations of BA</option>
+          <option value="Module 02">Module 02 – Requirements Gathering</option>
+          <option value="Module 03">Module 03 – Agile, Scrum & Methodologies</option>
+          <option value="Module 04">Module 04 – Process Modelling</option>
+          <option value="Module 05">Module 05 – UAT & Testing</option>
+          <option value="Module 06">Module 06 – Career & Interview Prep</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Assign to Batch</label>
+        <select class="form-input" id="doc-batch">
+          <option value="all">All Batches</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Document URL / Drive Link</label><input class="form-input"
+          id="doc-url" placeholder="https://drive.google.com/..."></div>
+      <div class="form-group"><label class="form-label">Document Type</label>
+        <select class="form-input" id="doc-type">
+          <option value="pdf">PDF Notes</option>
+          <option value="template">Template</option>
+          <option value="assignment">Assignment</option>
+          <option value="reference">Reference Material</option>
+          <option value="recording">Class Recording</option>
+        </select>
+      </div>
+      <button class="btn btn-v btn-full" onclick="uploadDocument()">Upload Document →</button>
+    </div>
+  </div>
+
+  <!-- Add Recording Modal -->
+  <div class="modal-overlay" id="modal-add-recording">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('modal-add-recording')">✕</button>
+      <div class="modal-title">Add Class Recording</div>
+      <div class="modal-sub">Add a recorded Zoom session day-wise for students to review.</div>
+      <div class="form-group"><label class="form-label">Class Day Title</label><input class="form-input" id="rec-title"
+          placeholder="e.g. Day 3 – Requirements Gathering Deep Dive"></div>
+      <div class="form-group"><label class="form-label">Session Date</label><input type="date" class="form-input"
+          id="rec-date"></div>
+      <div class="form-group"><label class="form-label">Duration</label><input class="form-input" id="rec-duration"
+          placeholder="e.g. 2h 15m"></div>
+      <div class="form-group"><label class="form-label">Recording URL (Zoom/Drive)</label><input class="form-input"
+          id="rec-url" placeholder="https://zoom.us/rec/..."></div>
+      <div class="form-group"><label class="form-label">Batch</label>
+        <select class="form-input" id="rec-batch">
+          <option value="all">All Batches</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Topics Covered</label><input class="form-input" id="rec-topics"
+          placeholder="BRD, FRD, RTM, Stakeholder interviews"></div>
+      <button class="btn btn-v btn-full" onclick="addRecording()">Add Recording →</button>
+    </div>
+  </div>
+
+  <!-- Mark Attendance Modal -->
+  <div class="modal-overlay" id="modal-attendance">
+    <div class="modal" style="max-width:620px;">
+      <button class="modal-close" onclick="closeModal('modal-attendance')">✕</button>
+      <div class="modal-title">Mark Attendance</div>
+      <div class="modal-sub">Session: <span id="att-session-name">Today's Class</span></div>
+      <div id="att-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+      <button class="btn btn-v btn-full" onclick="saveAttendance()">Save Attendance →</button>
+    </div>
+  </div>
+
+  <!-- Certificate Canvas (hidden, for generation) -->
+  <canvas id="cert-canvas" width="900" height="636"></canvas>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════
+     SERVER CONFIGURATION
+  ═══════════════════════════════════════════════════════ */
+    const USE_SERVER = true; // Set to true to use backend, false for local storage
+    const BACKEND_URL = "https://taleeo-backend.holistichealervedika.com/api/v1";
+
+    /* ═══════════════════════════════════════════════════════
+       UNIVERSAL DATA HANDLER
+    ═══════════════════════════════════════════════════════ */
+    // Universal fetch function with local fallback
+    async function fetchApiData(endpoint, fallbackFunction) {
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}${endpoint}`);
+          if (!response.ok) throw new Error('API unreachable');
+          return await response.json();
+        } catch (err) {
+          console.warn(`Backend not ready for ${endpoint}. Using local fallback data.`);
+          return fallbackFunction(); // Fallback to local storage data
+        }
+      }
+      return fallbackFunction();
+    }
+    async function getData(key) {
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/${key}`);
+          if (!response.ok) throw new Error('Server unreachable');
+          return await response.json();
+        } catch (err) {
+          console.warn(`Server error for ${key}, falling back to LocalStorage`, err);
+          return ls(key);
+        }
+      }
+      return ls(key);
+    }
+    // Helper to show a loading spinner in the main content area
+    function showLoading() {
+      document.getElementById('main-content').innerHTML = `
+    <div style="display:flex;justify-content:center;align-items:center;height:100%;color:var(--v2);">
+      <div style="font-size:1.2rem;font-weight:600;">Loading data...</div>
+    </div>`;
+    }
+
+    async function postData(key, payload) {
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/${key}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          return await response.json();
+        } catch (err) {
+          console.error(`Failed to post to server for ${key}`, err);
+        }
+      }
+      // Local fallback logic
+      let data = ls(key) || (key === 'attendance' ? {} : []);
+      if (Array.isArray(data)) {
+        data.push(payload);
+      } else {
+        Object.assign(data, payload);
+      }
+      ls(key, data);
+      return payload;
+    }
+    /* ═══════════════════════════════════════════════════════
+       DATA STORE (localStorage-backed)
+    ═══════════════════════════════════════════════════════ */
+    function ls(key, val) {
+      if (val !== undefined) { localStorage.setItem('tlms_' + key, JSON.stringify(val)); return val; }
+      try { return JSON.parse(localStorage.getItem('tlms_' + key)); } catch (e) { return null; }
+    }
+
+    // ── SEED INITIAL DATA ──
+    function initData() {
+      if (!ls('seeded')) {
+        ls('users', [
+          { id: 'admin1', name: 'Admin', email: 'taleeolearnings@gmail.com', password: 'admin123', role: 'admin', phone: '9000000000', firstLogin: false, avatar: 'A' }
+        ]);
+        ls('batches', [
+          { id: 'b1', name: 'Weekend Batch – April 2026', type: 'weekend', start: '2026-04-05', end: '2026-05-31', timing: '10:00 AM – 12:00 PM IST', zoomLink: 'https://zoom.us/j/1234567890', zoomId: '123 456 7890', zoomPass: 'learn123', active: true, students: [] },
+          { id: 'b2', name: 'Weekday Batch – April 2026', type: 'weekday', start: '2026-04-07', end: '2026-05-28', timing: '07:00 PM – 09:00 PM IST', zoomLink: 'https://zoom.us/j/9876543210', zoomId: '987 654 3210', zoomPass: 'ba2026', active: true, students: [] }
+        ]);
+        ls('documents', [
+          { id: 'd1', title: 'BA Foundations – Introduction Deck', module: 'Module 01', batch: 'all', url: '#', type: 'pdf', uploadedAt: '2026-04-01' },
+          { id: 'd2', title: 'BRD Template', module: 'Module 02', batch: 'all', url: '#', type: 'template', uploadedAt: '2026-04-03' },
+          { id: 'd3', title: 'User Story Format & Examples', module: 'Module 02', batch: 'all', url: '#', type: 'reference', uploadedAt: '2026-04-04' },
+          { id: 'd4', title: 'JIRA Basics Cheat Sheet', module: 'Module 03', batch: 'all', url: '#', type: 'pdf', uploadedAt: '2026-04-06' }
+        ]);
+        ls('recordings', [
+          { id: 'r1', title: 'Day 1 – Foundations of BA & SDLC Overview', date: '2026-04-05', duration: '2h 10m', url: '#', batch: 'b1', topics: 'Role of BA, SDLC Phases, Business Domains' },
+          { id: 'r2', title: 'Day 2 – Requirements Gathering Techniques', date: '2026-04-06', duration: '1h 55m', url: '#', batch: 'b1', topics: 'BRD, FRD, User Stories, RTM' },
+          { id: 'r3', title: 'Day 1 – BA Foundations', date: '2026-04-07', duration: '2h 05m', url: '#', batch: 'b2', topics: 'Role of BA, Stakeholder Management' }
+        ]);
+        ls('attendance', {});
+        ls('seeded', true);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       AUTH
+    ═══════════════════════════════════════════════════════ */
+    var _currentUser = null;
+    var _loginPending = null;
+
+    // function doLogin(){
+    //   var email = document.getElementById('login-email').value.trim().toLowerCase();
+    //   var pass  = document.getElementById('login-pass').value.trim();
+    //   var users = ls('users')||[];
+    //   var user  = users.find(function(u){return u.email.toLowerCase()===email && u.password===pass;});
+    //   var msg   = document.getElementById('login-msg');
+    //   if(!user){
+    //     msg.className='login-msg show error';
+    //     msg.textContent='❌ Invalid email or password. Please try again.';
+    //     return;
+    //   }
+    //   msg.className='login-msg'; msg.textContent='';
+    //   _loginPending = user;
+    //   if(user.firstLogin===false && user.role!=='admin'){
+    //     // First time student login → OTP
+    //     document.getElementById('step-login').style.display='none';
+    //     document.getElementById('step-otp').style.display='block';
+    //     document.getElementById('otp-sub').textContent='Enter the 6-digit OTP sent to '+user.phone+'. (Demo OTP: 123456)';
+    //   } else {
+    //     completeLogin(user);
+    //   }
+    // }
+
+    // function completeLogin(user){
+    //   _currentUser=user;
+    //   document.getElementById('login-page').classList.remove('active');
+    //   document.getElementById('app-shell').classList.add('active');
+    //   buildShell();
+    //   showToast('Welcome back, '+user.name+'! 👋','✅');
+    // }
+
+    function completeLogin(user) {
+      _currentUser = user;
+
+      // NEW: Save the user session to local storage
+      ls('session_user', user);
+
+      document.getElementById('login-page').classList.remove('active');
+      document.getElementById('app-shell').classList.add('active');
+      buildShell();
+      showToast('Welcome back, ' + user.name + '! 👋', '✅');
+    }
+
+    // function doLogout(){
+    //   _currentUser=null;
+    //   document.getElementById('app-shell').classList.remove('active');
+    //   document.getElementById('login-page').classList.add('active');
+    //   document.getElementById('step-login').style.display='block';
+    //   document.getElementById('step-otp').style.display='none';
+    //   document.getElementById('login-email').value='';
+    //   document.getElementById('login-pass').value='';
+    //   for(var i=0;i<6;i++) document.getElementById('otp'+i).value='';
+    // }
+    function doLogout() {
+      _currentUser = null;
+
+      // NEW: Clear the saved session
+      localStorage.removeItem('tlms_session_user');
+
+      document.getElementById('app-shell').classList.remove('active');
+      document.getElementById('login-page').classList.add('active');
+      document.getElementById('step-login').style.display = 'block';
+      document.getElementById('step-otp').style.display = 'none';
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-pass').value = '';
+      for (var i = 0; i < 6; i++) {
+        let otpInput = document.getElementById('otp' + i);
+        if (otpInput) otpInput.value = '';
+      }
+    }
+    function checkSession() {
+      var savedUser = ls('session_user');
+      if (savedUser) {
+        // If a saved user is found, instantly log them in and show dashboard
+        completeLogin(savedUser);
+      }
+    }
+    // var _currentUser = null;
+    // var _loginPending = null;
+    async function doLogin() {
+      var email = document.getElementById('login-email').value.trim().toLowerCase();
+      var pass = document.getElementById('login-pass').value.trim();
+      var msg = document.getElementById('login-msg');
+
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, pass })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.message);
+
+          if (result.requiresOtp) {
+            _loginPending = result.user;
+            document.getElementById('step-login').style.display = 'none';
+            document.getElementById('step-otp').style.display = 'block';
+          } else {
+            completeLogin(result.user);
+          }
+          return;
+        } catch (e) {
+          msg.className = 'login-msg show error';
+          msg.textContent = '❌ ' + e.message;
+          return;
+        }
+      }
+      // }
+      // Original LocalStorage Auth Logic
+      var users = ls('users') || [];
+      var user = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+      if (!user) {
+        msg.className = 'login-msg show error';
+        msg.textContent = '❌ Invalid email or password.';
+        return;
+      }
+      _loginPending = user;
+      if (user.firstLogin === false && user.role !== 'admin') {
+        document.getElementById('step-login').style.display = 'none';
+        document.getElementById('step-otp').style.display = 'block';
+      } else {
+        completeLogin(user);
+      }
+    }
+
+    function otpInput(el, idx) {
+      if (el.value.length === 1 && idx < 5) document.getElementById('otp' + (idx + 1)).focus();
+    }
+
+    function verifyOtp() {
+      var otp = '';
+      for (var i = 0; i < 6; i++) otp += document.getElementById('otp' + i).value;
+      if (otp === '123456') {
+        // Mark first login done
+        var users = ls('users') || [];
+        var idx = users.findIndex(function (u) { return u.id === _loginPending.id; });
+        if (idx >= 0) { users[idx].firstLogin = true; ls('users', users); }
+        completeLogin(_loginPending);
+      } else {
+        var msg = document.getElementById('otp-msg');
+        msg.className = 'login-msg show error';
+        msg.textContent = '❌ Invalid OTP. Try 123456 for demo.';
+      }
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       SHELL BUILDER
+    ═══════════════════════════════════════════════════════ */
+    function buildShell() {
+      var u = _currentUser;
+      document.getElementById('sb-name').textContent = u.name;
+      document.getElementById('sb-role').textContent = u.role === 'admin' ? 'Administrator' : 'Student';
+      document.getElementById('sb-role-badge').textContent = u.role === 'admin' ? 'Admin Panel' : 'Student Portal';
+      document.getElementById('sb-avatar').textContent = u.name[0].toUpperCase();
+      document.getElementById('sb-avatar').style.background = u.role === 'admin' ? 'linear-gradient(135deg,#f59e0b,#ef4444)' : 'linear-gradient(135deg,var(--v1),var(--b1))';
+
+      var nav = document.getElementById('sidebar-nav');
+      if (u.role === 'admin') {
+        nav.innerHTML = `
+      <div class="sb-section">Overview</div>
+      <div class="sb-item active" onclick="navTo('admin-dashboard',this)"><span class="sb-item-icon">📊</span>Dashboard</div>
+      <div class="sb-section">Management</div>
+      <div class="sb-item" onclick="navTo('admin-batches',this)"><span class="sb-item-icon">🗂️</span>Batches</div>
+      <div class="sb-item" onclick="navTo('admin-students',this)"><span class="sb-item-icon">👥</span>Students</div>
+      <div class="sb-item" onclick="navTo('admin-documents',this)"><span class="sb-item-icon">📄</span>Documents</div>
+      <div class="sb-item" onclick="navTo('admin-recordings',this)"><span class="sb-item-icon">🎥</span>Recordings</div>
+      <div class="sb-section">Tools</div>
+      <div class="sb-item" onclick="navTo('admin-attendance',this)"><span class="sb-item-icon">✅</span>Attendance</div>
+      <div class="sb-item" onclick="navTo('admin-certificates',this)"><span class="sb-item-icon">🏆</span>Certificates</div>
+    `;
+        renderAdminDashboard();
+      } else {
+        nav.innerHTML = `
+      <div class="sb-section">My Learning</div>
+      <div class="sb-item active" onclick="navTo('student-dashboard',this)"><span class="sb-item-icon">🏠</span>Dashboard</div>
+      <div class="sb-item" onclick="navTo('student-course',this)"><span class="sb-item-icon">📚</span>Course Content</div>
+      <div class="sb-item" onclick="navTo('student-recordings',this)"><span class="sb-item-icon">🎥</span>Recordings</div>
+      <div class="sb-item" onclick="navTo('student-documents',this)"><span class="sb-item-icon">📄</span>Notes & Docs</div>
+      <div class="sb-section">Academics</div>
+      <div class="sb-item" onclick="navTo('student-attendance',this)"><span class="sb-item-icon">✅</span>My Attendance</div>
+      <div class="sb-item" onclick="navTo('student-certificate',this)"><span class="sb-item-icon">🏆</span>Certificate</div>
+    `;
+        renderStudentDashboard();
+      }
+    }
+
+    function navTo(page, el) {
+      document.querySelectorAll('.sb-item').forEach(function (i) { i.classList.remove('active'); });
+      if (el) el.classList.add('active');
+
+      if (_currentUser.role === 'admin') renderAdminPage(page);
+      else renderStudentPage(page);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ADMIN PAGES
+    ═══════════════════════════════════════════════════════ */
+    function renderAdminPage(page) {
+      if (page === 'admin-dashboard') renderAdminDashboard();
+      else if (page === 'admin-batches') renderAdminBatches();
+      else if (page === 'admin-students') renderAdminStudents();
+      else if (page === 'admin-documents') renderAdminDocuments();
+      else if (page === 'admin-recordings') renderAdminRecordings();
+      else if (page === 'admin-attendance') renderAdminAttendance();
+      else if (page === 'admin-certificates') renderAdminCertificates();
+    }
+
+    async function renderAdminDashboard() {
+      showLoading();
+
+      var mc = document.getElementById('main-content');
+      try {
+        // Endpoint: GET /admin/dashboard/summary
+        const data = await fetchApiData('/admin/dashboard/summary?top=20', () => {
+          // FALLBACK IF API FAILS: Calculate from local storage
+          const users = ls('users') || [];
+          const batches = ls('batches') || [];
+          const students = users.filter(u => u.role === 'student');
+          console.log("kkkkk")
+          return {
+            totalStudents: students.length,
+            activeBatchesCount: batches.filter(b => b.active).length,
+            totalDocs: (ls('documents') || []).length,
+            totalRecs: (ls('recordings') || []).length,
+            recentStudents: students.slice(0, 5),
+            activeBatches: batches
+          };
+        });
+        mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div><div class="topbar-title">Admin Dashboard</div><div class="topbar-sub">${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div></div></div><div class="topbar-right"><div class="notif-bell">🔔<span class="notif-dot"></span></div></div></div>
+    
+    <div class="grid-4" style="margin-bottom:20px;">
+      <div class="stat-card anim-in"><div class="stat-num" style="background:linear-gradient(135deg,var(--v2),var(--v3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${data.totalStudents}</div><div class="stat-lbl">Total Students</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.07s"><div class="stat-num" style="background:linear-gradient(135deg,var(--b1),var(--b2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${data.activeBatchesCount}</div><div class="stat-lbl">Active Batches</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.14s"><div class="stat-num" style="background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${data.totalDocs}</div><div class="stat-lbl">Documents</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.21s"><div class="stat-num" style="background:linear-gradient(135deg,var(--am),#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${data.totalRecs}</div><div class="stat-lbl">Recordings</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      
+      <div class="card anim-in">
+        <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ New Batch</button></div>
+        
+        <div style="max-height: 320px; overflow-y: auto; padding-right: 5px;">
+          ${data.activeBatches.map(b => {
+            let daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+            let progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+            return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div><div style="font-size:.85rem;font-weight:600;color:white;">${b.name}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${b.timing} · ${b.students ? b.students.length : 0} students</div></div>
+                <span class="badge ${b.active && daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
+              </div>
+              <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      
+      <div class="card anim-in" style="animation-delay:.1s">
+        <div class="card-header"><div class="card-title">Recent Students</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">+ Invite</button></div>
+        
+        <div style="max-height: 320px; overflow-y: auto; padding-right: 5px;">
+          ${data.recentStudents.length === 0 ? '<p style="font-size:.8rem;color:var(--muted);padding:16px 0;text-align:center;">No students yet.</p>' : ''}
+          ${data.recentStudents.map(s => {
+            return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+              <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;flex-shrink:0;">${s.name[0]}</div>
+              <div style="flex:1;"><div style="font-size:.83rem;font-weight:600;color:white;">${s.name}</div><div style="font-size:.7rem;color:var(--muted);">${s.email}</div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="card anim-in">
+      <div class="card-header"><div class="card-title">Quick Actions</div></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">🗂️ Create Batch</button>
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">👤 Invite Student</button>
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">📄 Upload Notes</button>
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-add-recording')">🎥 Add Recording</button>
+        <button class="btn btn-v btn-sm" onclick="navTo('admin-certificates',null);document.querySelectorAll('.sb-item')[7]&&document.querySelectorAll('.sb-item')[7].classList.add('active')">🏆 Generate Certificates</button>
+      </div>
+    </div>
+  `;
+      } catch (e) {
+        console.log(e)
+        var users = ls('users') || [];
+        var batches = ls('batches') || [];
+        var docs = ls('documents') || [];
+        var recs = ls('recordings') || [];
+        var students = users.filter(function (u) { return u.role === 'student'; });
+        mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div><div class="topbar-title">Admin Dashboard</div><div class="topbar-sub">${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div></div></div><div class="topbar-right"><div class="notif-bell">🔔<span class="notif-dot"></span></div></div></div>
+    <div class="grid-4" style="margin-bottom:20px;">
+      <div class="stat-card anim-in"><div class="stat-num" style="background:linear-gradient(135deg,var(--v2),var(--v3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${students.length}</div><div class="stat-lbl">Total Students</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.07s"><div class="stat-num" style="background:linear-gradient(135deg,var(--b1),var(--b2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${batches.filter(function (b) { return b.active; }).length}</div><div class="stat-lbl">Active Batches</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.14s"><div class="stat-num" style="background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${docs.length}</div><div class="stat-lbl">Documents</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.21s"><div class="stat-num" style="background:linear-gradient(135deg,var(--am),#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${recs.length}</div><div class="stat-lbl">Recordings</div></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card anim-in">
+        <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ New Batch</button></div>
+        ${batches.map(function (b) {
+          var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+          var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+          return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div><div style="font-size:.85rem;font-weight:600;color:white;">${b.name}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${b.timing} · ${b.students.length} students</div></div>
+              <span class="badge ${b.active && daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="card anim-in" style="animation-delay:.1s">
+        <div class="card-header"><div class="card-title">Recent Students</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">+ Invite</button></div>
+        ${students.length === 0 ? '<p style="font-size:.8rem;color:var(--muted);padding:16px 0;text-align:center;">No students yet. Invite your first student!</p>' : ''}
+        ${students.slice(0, 5).map(function (s) {
+          var batch = batches.find(function (b) { return b.students.includes(s.id); }) || {};
+          return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;flex-shrink:0;">${s.name[0]}</div>
+            <div style="flex:1;"><div style="font-size:.83rem;font-weight:600;color:white;">${s.name}</div><div style="font-size:.7rem;color:var(--muted);">${s.email}</div></div>
+            <span class="badge badge-v">${batch.name ? batch.name.split(' ')[0] + ' ' + batch.name.split(' ')[1] : 'No Batch'}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card anim-in">
+      <div class="card-header"><div class="card-title">Quick Actions</div></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">🗂️ Create Batch</button>
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">👤 Invite Student</button>
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">📄 Upload Notes</button>
+        <button class="btn btn-v btn-sm" onclick="openModal('modal-add-recording')">🎥 Add Recording</button>
+        <button class="btn btn-v btn-sm" onclick="navTo('admin-certificates',null);document.querySelectorAll('.sb-item')[7]&&document.querySelectorAll('.sb-item')[7].classList.add('active')">🏆 Generate Certificates</button>
+      </div>
+    </div>
+  `;
+      }
+    }
+    /*
+
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card anim-in">
+        <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ New Batch</button></div>
+        ${data.activeBatches.map(b => {
+          let daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+          let progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+          return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+              <div><div style="font-size:.85rem;font-weight:600;color:white;">${b.name}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${b.timing} · ${b.students.length} students</div></div>
+              <span class="badge ${b.active && daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
+      
+      <div class="card anim-in" style="animation-delay:.1s">
+        <div class="card-header"><div class="card-title">Recent Students</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">+ Invite</button></div>
+        ${data.recentStudents.length === 0 ? '<p style="font-size:.8rem;color:var(--muted);padding:16px 0;text-align:center;">No students yet.</p>' : ''}
+        ${data.recentStudents.map(s => {
+          return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;flex-shrink:0;">${s.name[0]}</div>
+            <div style="flex:1;"><div style="font-size:.83rem;font-weight:600;color:white;">${s.name}</div><div style="font-size:.7rem;color:var(--muted);">${s.email}</div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    */
+
+    //   function renderAdminBatches() {
+    //     var batches = ls('batches') || [];
+    //     var users = ls('users') || [];
+    //     var mc = document.getElementById('main-content');
+    //     mc.innerHTML = `
+    //   <div class="topbar"><div class="topbar-left"><div class="topbar-title">Batch Management</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ Create Batch</button></div></div>
+    //   <div class="grid-2">
+    //     ${batches.map(function (b) {
+    //       var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+    //       var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+    //       var enrolled = users.filter(function (u) { return b.students.includes(u.id); });
+    //       return `<div class="card anim-in">
+    //         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+    //           <div><div style="font-size:1rem;font-weight:700;color:white;margin-bottom:4px;">${b.name}</div>
+    //           <span class="badge ${b.type === 'weekend' ? 'badge-v' : 'badge-b'}">${b.type === 'weekend' ? 'Weekend' : 'Weekday'}</span></div>
+    //           <span class="badge ${daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
+    //         </div>
+    //         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:.78rem;color:var(--muted);">
+    //           <div>⏰ ${b.timing}</div>
+    //           <div>👥 ${enrolled.length} students</div>
+    //           <div>📅 ${b.start} → ${b.end}</div>
+    //           <div>🔑 ${b.zoomPass}</div>
+    //         </div>
+    //         <div class="zoom-card" style="margin-bottom:14px;">
+    //           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="zoom-live-dot"></span><span style="font-size:.75rem;font-weight:700;color:white;">Zoom Meeting</span></div>
+    //           <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">ID: ${b.zoomId} · Pass: ${b.zoomPass}</div>
+    //           <a href="${b.zoomLink}" target="_blank" style="font-size:.72rem;color:var(--b2);word-break:break-all;">${b.zoomLink}</a>
+    //         </div>
+    //         <div class="progress-wrap" style="margin-bottom:10px;"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
+    //         <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    //           <button class="btn btn-success btn-sm" onclick="openInviteForBatch('${b.id}')">+ Invite Student</button>
+    //           <button class="btn btn-danger btn-sm" onclick="toggleBatch('${b.id}')">${b.active ? 'Deactivate' : 'Activate'}</button>
+    //         </div>
+    //         ${enrolled.length > 0 ? `<div style="margin-top:12px;"><div style="font-size:.68rem;font-weight:700;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Enrolled Students</div>${enrolled.map(function (s) { return '<span class="badge badge-v" style="margin:2px;">' + s.name + '</span>'; }).join('')}</div>` : ''}
+    //       </div>`;
+    //     }).join('')}
+    //   </div>
+    // `;
+    //   }
+    async function renderAdminBatches() {
+      var mc = document.getElementById('main-content');
+
+      // Optional: Show a quick loading message while fetching
+      mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading batches...</div>';
+
+      var batches = [];
+      var users = [];
+
+      // 1. Try to fetch from API if USE_SERVER is true
+      if (USE_SERVER) {
+        try {
+          // Fetch batches
+          const response = await fetch(`${BACKEND_URL}/admin/batches`);
+          if (!response.ok) throw new Error('API failed to load batches');
+          batches = await response.json();
+
+          // Fetch users (needed to display the names of enrolled students)
+          try {
+            const userRes = await fetch(`${BACKEND_URL}/admin/students?limit=100`);
+            if (userRes.ok) users = await userRes.json();
+            else users = ls('users') || []; // fallback for users
+          } catch (userErr) {
+            users = ls('users') || [];
+          }
+        } catch (error) {
+          console.warn("Backend unavailable, falling back to LocalStorage.", error);
+          // 2. FALLBACK: If fetch fails (server down), use local storage
+          batches = ls('batches') || [];
+          users = ls('users') || [];
+        }
+      } else {
+        // 3. ELSE: If USE_SERVER is explicitly false, just use local storage
+        batches = ls('batches') || [];
+        users = ls('users') || [];
+      }
+
+      // 4. Render the UI (Your exact HTML template remains the same)
+      mc.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-left"><div class="topbar-title">Batch Management</div></div>
+      <div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ Create Batch</button></div>
+    </div>
+    <div class="grid-2">
+      ${batches.map(function (b) {
+        // Safety check in case b.students is undefined from the API
+        var studentIds = b.students || [];
+        var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+        var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+        var enrolled = users.filter(function (u) { return studentIds.includes(u.id); });
+
+        return `<div class="card anim-in">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+            <div><div style="font-size:1rem;font-weight:700;color:white;margin-bottom:4px;">${b.name}</div>
+            <span class="badge ${b.type === 'weekend' ? 'badge-v' : 'badge-b'}">${b.type === 'weekend' ? 'Weekend' : 'Weekday'}</span></div>
+            <span class="badge ${daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:.78rem;color:var(--muted);">
+            <div>⏰ ${b.timing}</div>
+            <div>👥 ${enrolled.length} students</div>
+            <div>📅 ${b.start} → ${b.end}</div>
+            <div>🔑 ${b.zoomPass}</div>
+          </div>
+          <div class="zoom-card" style="margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="zoom-live-dot"></span><span style="font-size:.75rem;font-weight:700;color:white;">Zoom Meeting</span></div>
+            <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">ID: ${b.zoomId} · Pass: ${b.zoomPass}</div>
+            <a href="${b.zoomLink}" target="_blank" style="font-size:.72rem;color:var(--b2);word-break:break-all;">${b.zoomLink}</a>
+          </div>
+          <div class="progress-wrap" style="margin-bottom:10px;"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-success btn-sm" onclick="openInviteForBatch('${b.id}')">+ Invite Student</button>
+            <button class="btn btn-danger btn-sm" onclick="toggleBatch('${b.id}')">${b.active ? 'Deactivate' : 'Activate'}</button>
+          </div>
+          ${enrolled.length > 0 ? `<div style="margin-top:12px;"><div style="font-size:.68rem;font-weight:700;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Enrolled Students</div>${enrolled.map(function (s) { return '<span class="badge badge-v" style="margin:2px;">' + s.name + '</span>'; }).join('')}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+    }
+    async function renderAdminStudents() {
+      var mc = document.getElementById('main-content');
+
+      // Optional: Show a quick loading message
+      mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading students...</div>';
+
+      var students = [];
+      var batches = [];
+
+      // 1. Try to fetch from API if USE_SERVER is true
+      if (USE_SERVER) {
+        try {
+          // Fetch students
+          const response = await fetch(`${BACKEND_URL}/admin/students`);
+          if (!response.ok) throw new Error('API failed to load students');
+          students = await response.json();
+
+          // Fetch batches to match student IDs to batch names
+          try {
+            const batchRes = await fetch(`${BACKEND_URL}/admin/batches`);
+            if (batchRes.ok) batches = await batchRes.json();
+            else batches = ls('batches') || [];
+          } catch (batchErr) {
+            batches = ls('batches') || [];
+          }
+        } catch (error) {
+          console.warn("Backend unavailable, falling back to LocalStorage.", error);
+          // 2. FALLBACK: Filter users from local storage
+          var allUsers = ls('users') || [];
+          students = allUsers.filter(function (u) { return u.role === 'student'; });
+          batches = ls('batches') || [];
+        }
+      } else {
+        // 3. ELSE: Use local storage
+        var allUsers = ls('users') || [];
+        students = allUsers.filter(function (u) { return u.role === 'student'; });
+        batches = ls('batches') || [];
+      }
+
+      // 4. Render the UI
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Student Management</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">+ Invite Student</button></div></div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">All Students (${students.length})</div></div>
+      ${students.length === 0 ? '<p style="text-align:center;color:var(--muted);padding:32px;">No students yet. Click "Invite Student" to get started.</p>' : ''}
+      <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Student</th><th>Email</th><th>Phone</th><th>Batch</th><th>Password</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${students.map(function (s) {
+        // Safety check: ensure b.students exists before calling .includes()
+        var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
+
+        return `<tr>
+              <td><div style="display:flex;align-items:center;gap:9px;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">${s.name[0]}</div><span style="font-weight:600;">${s.name}</span></div></td>
+              <td style="color:var(--muted);">${s.email}</td>
+              <td style="color:var(--muted);">${s.phone || '—'}</td>
+              <td>${batch ? '<span class="badge badge-v">' + batch.name.substring(0, 20) + '...</span>' : '<span class="badge badge-r">No Batch</span>'}</td>
+              <td style="font-family:monospace;font-size:.78rem;color:var(--v2);">${s.password}</td>
+              <td><span class="badge ${s.firstLogin ? 'badge-g' : 'badge-a'}">${s.firstLogin ? 'Active' : 'Invited'}</span></td>
+              <td><button class="btn btn-danger btn-sm" onclick="removeStudent('${s.id}')">Remove</button></td>
+            </tr>`;
+      }).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `;
+    }
+
+    //   function renderAdminStudents() {
+    //     var users = ls('users') || [];
+    //     var batches = ls('batches') || [];
+    //     var students = users.filter(function (u) { return u.role === 'student'; });
+    //     var mc = document.getElementById('main-content');
+    //     mc.innerHTML = `
+    //   <div class="topbar"><div class="topbar-left"><div class="topbar-title">Student Management</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">+ Invite Student</button></div></div>
+    //   <div class="card">
+    //     <div class="card-header"><div class="card-title">All Students (${students.length})</div></div>
+    //     ${students.length === 0 ? '<p style="text-align:center;color:var(--muted);padding:32px;">No students yet. Click "Invite Student" to get started.</p>' : ''}
+    //     <div style="overflow-x:auto;">
+    //     <table class="tbl">
+    //       <thead><tr><th>Student</th><th>Email</th><th>Phone</th><th>Batch</th><th>Password</th><th>Status</th><th>Actions</th></tr></thead>
+    //       <tbody>
+    //         ${students.map(function (s) {
+    //       var batch = batches.find(function (b) { return b.students.includes(s.id); }) || null;
+    //       return `<tr>
+    //             <td><div style="display:flex;align-items:center;gap:9px;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">${s.name[0]}</div><span style="font-weight:600;">${s.name}</span></div></td>
+    //             <td style="color:var(--muted);">${s.email}</td>
+    //             <td style="color:var(--muted);">${s.phone || '—'}</td>
+    //             <td>${batch ? '<span class="badge badge-v">' + batch.name.substring(0, 20) + '...</span>' : '<span class="badge badge-r">No Batch</span>'}</td>
+    //             <td style="font-family:monospace;font-size:.78rem;color:var(--v2);">${s.password}</td>
+    //             <td><span class="badge ${s.firstLogin ? 'badge-g' : 'badge-a'}">${s.firstLogin ? 'Active' : 'Invited'}</span></td>
+    //             <td><button class="btn btn-danger btn-sm" onclick="removeStudent('${s.id}')">Remove</button></td>
+    //           </tr>`;
+    //     }).join('')}
+    //       </tbody>
+    //     </table>
+    //     </div>
+    //   </div>
+    // `;
+    //   }
+
+    //   function renderAdminDocuments() {
+    //     var docs = ls('documents') || [];
+    //     var mc = document.getElementById('main-content');
+    //     mc.innerHTML = `
+    //   <div class="topbar"><div class="topbar-left"><div class="topbar-title">Documents & Notes</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">+ Upload Document</button></div></div>
+    //   <div class="grid-auto">
+    //     ${docs.map(function (d) {
+    //       var icons = { pdf: '📄', template: '📋', assignment: '📝', reference: '📖', recording: '🎥' };
+    //       var colors = { pdf: 'badge-v', template: 'badge-b', assignment: 'badge-a', reference: 'badge-c', recording: 'badge-g' };
+    //       return `<div class="card anim-in" style="position:relative;">
+    //         <div style="font-size:2rem;margin-bottom:10px;">${icons[d.type] || '📄'}</div>
+    //         <div style="font-size:.88rem;font-weight:700;color:white;margin-bottom:5px;">${d.title}</div>
+    //         <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${d.module}</div>
+    //         <span class="badge ${colors[d.type] || 'badge-v'}" style="margin-bottom:10px;">${d.type}</span>
+    //         <div style="font-size:.68rem;color:var(--dim);margin-bottom:12px;">Uploaded: ${d.uploadedAt}</div>
+    //         <div style="display:flex;gap:7px;">
+    //           <a href="${d.url}" target="_blank" class="btn btn-out btn-sm">Open ↗</a>
+    //           <button class="btn btn-danger btn-sm" onclick="deleteDoc('${d.id}')">Delete</button>
+    //         </div>
+    //       </div>`;
+    //     }).join('')}
+    //     <div class="card anim-in" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:160px;" onclick="openModal('modal-upload-doc')">
+    //       <div style="font-size:2rem;">➕</div>
+    //       <div style="font-size:.82rem;color:var(--muted);">Upload Document</div>
+    //     </div>
+    //   </div>
+    // `;
+    //   }
+
+    async function renderAdminDocuments() {
+      var mc = document.getElementById('main-content');
+
+      // Optional: Show a quick loading message while fetching
+      mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading documents...</div>';
+
+      var docs = [];
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/documents`);
+          if (!response.ok) throw new Error('API failed to load documents');
+          docs = await response.json();
+        } catch (error) {
+          console.warn("Backend unavailable, falling back to LocalStorage.", error);
+          docs = ls('documents') || [];
+        }
+      } else {
+        // 3. ELSE: If USE_SERVER is explicitly false, use local storage
+        docs = ls('documents') || [];
+      }
+
+      // 4. Render the UI (Your exact HTML template)
+
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Documents & Notes</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">+ Upload Document</button></div></div>
+    <div class="grid-auto">
+      ${docs.map(function (d) {
+        var icons = { pdf: '📄', template: '📋', assignment: '📝', reference: '📖', recording: '🎥' };
+        var colors = { pdf: 'badge-v', template: 'badge-b', assignment: 'badge-a', reference: 'badge-c', recording: 'badge-g' };
+        return `<div class="card anim-in" style="position:relative;">
+          <div style="font-size:2rem;margin-bottom:10px;">${icons[d.type] || '📄'}</div>
+          <div style="font-size:.88rem;font-weight:700;color:white;margin-bottom:5px;">${d.title}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${d.module}</div>
+          <span class="badge ${colors[d.type] || 'badge-v'}" style="margin-bottom:10px;">${d.type}</span>
+          <div style="font-size:.68rem;color:var(--dim);margin-bottom:12px;">Uploaded: ${d.uploadedAt}</div>
+          <div style="display:flex;gap:7px;">
+            <a href="${d.url}" target="_blank" class="btn btn-out btn-sm">Open ↗</a>
+            <button class="btn btn-danger btn-sm" onclick="deleteDoc('${d.id}')">Delete</button>
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="card anim-in" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:160px;" onclick="openModal('modal-upload-doc')">
+        <div style="font-size:2rem;">➕</div>
+        <div style="font-size:.82rem;color:var(--muted);">Upload Document</div>
+      </div>
+    </div>
+  `;
+    }
+
+
+    //   function renderAdminRecordings() {
+    //     var recs = ls('recordings') || [];
+    //     var batches = ls('batches') || [];
+    //     var mc = document.getElementById('main-content');
+    //     mc.innerHTML = `
+    //   <div class="topbar"><div class="topbar-left"><div class="topbar-title">Class Recordings</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-recording')">+ Add Recording</button></div></div>
+    //   <div style="display:flex;flex-direction:column;gap:12px;">
+    //     ${recs.map(function (r, i) {
+    //       var batch = batches.find(function (b) { return b.id === r.batch; }) || { name: 'All Batches' };
+    //       return `<div class="card anim-in" style="animation-delay:${i * 0.06}s;">
+    //         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+    //           <div style="display:flex;align-items:center;gap:14px;">
+    //             <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(239,68,68,.1));border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🎥</div>
+    //             <div>
+    //               <div style="font-size:.9rem;font-weight:700;color:white;margin-bottom:3px;">${r.title}</div>
+    //               <div style="font-size:.72rem;color:var(--muted);">📅 ${r.date} · ⏱ ${r.duration} · 🏷 ${r.topics}</div>
+    //             </div>
+    //           </div>
+    //           <div style="display:flex;align-items:center;gap:8px;">
+    //             <span class="badge badge-b">${batch.name.substring(0, 18)}...</span>
+    //             <a href="${r.url}" target="_blank" class="btn btn-out btn-sm">Watch ▶</a>
+    //             <button class="btn btn-danger btn-sm" onclick="deleteRec('${r.id}')">Delete</button>
+    //           </div>
+    //         </div>
+    //       </div>`;
+    //     }).join('')}
+    //   </div>
+    // `;
+    //   }
+
+    async function renderAdminRecordings() {
+      var mc = document.getElementById('main-content');
+
+      // Optional: Show a quick loading message while fetching
+      mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading recordings...</div>';
+
+      var recs = [];
+      var batches = [];
+
+      // 1. Try to fetch from API if USE_SERVER is true
+      if (USE_SERVER) {
+        try {
+          // Fetch recordings
+          const response = await fetch(`${BACKEND_URL}/admin/recordings`);
+          if (!response.ok) throw new Error('API failed to load recordings');
+          recs = await response.json();
+
+          // Fetch batches (needed to display the batch name on the badge)
+          try {
+            const batchRes = await fetch(`${BACKEND_URL}/admin/batches`);
+            if (batchRes.ok) batches = await batchRes.json();
+            else batches = ls('batches') || [];
+          } catch (batchErr) {
+            batches = ls('batches') || [];
+          }
+        } catch (error) {
+          console.warn("Backend unavailable, falling back to LocalStorage.", error);
+          // 2. FALLBACK: If fetch fails (server down), use local storage
+          recs = ls('recordings') || [];
+          batches = ls('batches') || [];
+        }
+      } else {
+        // 3. ELSE: If USE_SERVER is explicitly false, use local storage
+        recs = ls('recordings') || [];
+        batches = ls('batches') || [];
+      }
+
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Class Recordings</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-recording')">+ Add Recording</button></div></div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      ${recs.length === 0 ? '<p style="text-align:center;color:var(--muted);padding:20px;">No recordings uploaded yet.</p>' : ''}
+      ${recs.map(function (r, i) {
+        var batch = batches.find(function (b) { return b.id === r.batch; }) || { name: 'All Batches' };
+
+        return `<div class="card anim-in" style="animation-delay:${i * 0.06}s;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(239,68,68,.1));border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🎥</div>
+              <div>
+                <div style="font-size:.9rem;font-weight:700;color:white;margin-bottom:3px;">${r.title}</div>
+                <div style="font-size:.72rem;color:var(--muted);">📅 ${r.date} · ⏱ ${r.duration} · 🏷 ${r.topics}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="badge badge-b">${batch.name.substring(0, 18)}...</span>
+              <a href="${r.url}" target="_blank" class="btn btn-out btn-sm">Watch ▶</a>
+              <button class="btn btn-danger btn-sm" onclick="deleteRec('${r.id}')">Delete</button>
+            </div>
+          </div>
+        </div> `;
+      }).join('')}
+    </div>
+  `;
+    }
+    //   function renderAdminAttendance() {
+    //     var users = ls('users') || [];
+    //     var batches = ls('batches') || [];
+    //     var attendance = ls('attendance') || {};
+    //     var students = users.filter(function (u) { return u.role === 'student'; });
+    //     var mc = document.getElementById('main-content');
+    //     mc.innerHTML = `
+    //   <div class="topbar"><div class="topbar-left"><div class="topbar-title">Attendance Management</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openAttendanceModal()">Mark Today's Attendance</button></div></div>
+    //   <div class="card" style="margin-bottom:18px;">
+    //     <div class="card-header"><div class="card-title">Attendance Overview</div></div>
+    //     <div style="overflow-x:auto;">
+    //     <table class="tbl">
+    //       <thead><tr><th>Student</th><th>Batch</th><th>Present</th><th>Total Sessions</th><th>Attendance %</th><th>Status</th></tr></thead>
+    //       <tbody>
+    //         ${students.map(function (s) {
+    //       var batch = batches.find(function (b) { return b.students.includes(s.id); }) || null;
+    //       var att = attendance[s.id] || {};
+    //       var totalDays = Object.keys(att).length || 0;
+    //       var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length || 0;
+    //       var totalSessions = Math.max(totalDays, 10);
+    //       var pct = totalSessions > 0 ? Math.round(presentDays / totalSessions * 100) : 0;
+    //       return `<tr>
+    //             <td style="font-weight:600;">${s.name}</td>
+    //             <td>${batch ? '<span class="badge badge-v">' + batch.name.substring(0, 16) + '...</span>' : '—'}</td>
+    //             <td style="color:#6ee7b7;">${presentDays}</td>
+    //             <td>${totalSessions}</td>
+    //             <td>
+    //               <div style="display:flex;align-items:center;gap:8px;">
+    //                 <div class="progress-wrap" style="width:80px;"><div class="progress-fill" style="width:${pct}%;background:${pct >= 75 ? 'linear-gradient(90deg,var(--gr),#6ee7b7)' : pct >= 50 ? 'linear-gradient(90deg,var(--am),#fde68a)' : 'linear-gradient(90deg,var(--ro),#fda4af)'};"></div></div>
+    //                 <span style="font-size:.78rem;font-weight:700;color:${pct >= 75 ? '#6ee7b7' : pct >= 50 ? '#fde68a' : '#fda4af'};">${pct}%</span>
+    //               </div>
+    //             </td>
+    //             <td><span class="badge ${pct >= 75 ? 'badge-g' : pct >= 50 ? 'badge-a' : 'badge-r'}">${pct >= 75 ? 'Good' : pct >= 50 ? 'Average' : 'Low'}</span></td>
+    //           </tr>`;
+    //     }).join('')}
+    //       </tbody>
+    //     </table>
+    //     </div>
+    //   </div>
+    // `;
+    //   }
+    async function renderAdminAttendance() {
+      var mc = document.getElementById('main-content');
+
+      // Show a quick loading message
+      mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading attendance data...</div>';
+
+      var students = [];
+      var batches = [];
+      var attendance = {};
+
+      // 1. Try to fetch from API if USE_SERVER is true
+      if (USE_SERVER) {
+        try {
+          // Fetch Students
+          try {
+            const stuRes = await fetch(`${BACKEND_URL}/admin/students`);
+            if (stuRes.ok) students = await stuRes.json();
+            else students = (ls('users') || []).filter(u => u.role === 'student');
+          } catch (e) { students = (ls('users') || []).filter(u => u.role === 'student'); }
+
+          // Fetch Batches
+          try {
+            const batchRes = await fetch(`${BACKEND_URL}/admin/batches`);
+            if (batchRes.ok) batches = await batchRes.json();
+            else batches = ls('batches') || [];
+          } catch (e) { batches = ls('batches') || []; }
+
+          // Fetch Attendance
+          try {
+            const attRes = await fetch(`${BACKEND_URL}/admin/attendance`);
+            if (attRes.ok) attendance = await attRes.json();
+            else attendance = ls('attendance') || {};
+          } catch (e) { attendance = ls('attendance') || {}; }
+
+        } catch (error) {
+          console.warn("Backend unavailable, falling back to LocalStorage.", error);
+          students = (ls('users') || []).filter(u => u.role === 'student');
+          batches = ls('batches') || [];
+          attendance = ls('attendance') || {};
+        }
+      } else {
+        // 2. ELSE: Use local storage
+        students = (ls('users') || []).filter(u => u.role === 'student');
+        batches = ls('batches') || [];
+        attendance = ls('attendance') || {};
+      }
+
+      // 3. DUMMY FALLBACK: If absolutely no students exist, load a sample model
+      if (students.length === 0) {
+        console.log("No students found. Loading dummy data for preview.");
+        students = [
+          { id: 'demo_student_1', name: 'Jane Doe (Demo Student)' }
+        ];
+        batches = [
+          { id: 'demo_batch', name: 'UI/UX Preview Batch', students: ['demo_student_1'] }
+        ];
+        attendance = {
+          'demo_student_1': {
+            '2026-03-28': 'present',
+            '2026-03-29': 'present',
+            '2026-03-30': 'absent'
+          }
+        };
+      }
+
+      // 4. Render the UI
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Attendance Management</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openAttendanceModal()">Mark Today's Attendance</button></div></div>
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header"><div class="card-title">Attendance Overview</div></div>
+      <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead><tr><th>Student</th><th>Batch</th><th>Present</th><th>Total Sessions</th><th>Attendance %</th><th>Status</th></tr></thead>
+        <tbody>
+          ${students.map(function (s) {
+        // Safely check if the batch contains this student
+        var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
+        var att = attendance[s.id] || {};
+        var totalDays = Object.keys(att).length || 0;
+        var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length || 0;
+        var totalSessions = Math.max(totalDays, 10); // Assumes a minimum 10 session baseline
+        var pct = totalSessions > 0 ? Math.round(presentDays / totalSessions * 100) : 0;
+
+        return `<tr>
+              <td style="font-weight:600;">${s.name}</td>
+              <td>${batch ? '<span class="badge badge-v">' + batch.name.substring(0, 16) + '...</span>' : '—'}</td>
+              <td style="color:#6ee7b7;">${presentDays}</td>
+              <td>${totalSessions}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="progress-wrap" style="width:80px;"><div class="progress-fill" style="width:${pct}%;background:${pct >= 75 ? 'linear-gradient(90deg,var(--gr),#6ee7b7)' : pct >= 50 ? 'linear-gradient(90deg,var(--am),#fde68a)' : 'linear-gradient(90deg,var(--ro),#fda4af)'};"></div></div>
+                  <span style="font-size:.78rem;font-weight:700;color:${pct >= 75 ? '#6ee7b7' : pct >= 50 ? '#fde68a' : '#fda4af'};">${pct}%</span>
+                </div>
+              </td>
+              <td><span class="badge ${pct >= 75 ? 'badge-g' : pct >= 50 ? 'badge-a' : 'badge-r'}">${pct >= 75 ? 'Good' : pct >= 50 ? 'Average' : 'Low'}</span></td>
+            </tr>`;
+      }).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  `;
+    }
+
+    //   function renderAdminCertificates() {
+    //     var users = ls('users') || [];
+    //     var batches = ls('batches') || [];
+    //     var students = users.filter(function (u) { return u.role === 'student'; });
+    //     var mc = document.getElementById('main-content');
+    //     mc.innerHTML = `
+    //   <div class="topbar"><div class="topbar-left"><div class="topbar-title">Certificate Management</div></div></div>
+    //   <div class="grid-2">
+    //     <div class="card anim-in">
+    //       <div class="card-header"><div class="card-title">Generate Individual Certificate</div></div>
+    //       <div class="form-group"><label class="form-label">Select Student</label>
+    //         <select class="form-input" id="cert-student-select">
+    //           <option value="">Choose student...</option>
+    //           ${students.map(function (s) { return '<option value="' + s.id + '">' + s.name + ' (' + s.email + ')</option>'; }).join('')}
+    //         </select>
+    //       </div>
+    //       <div class="form-group"><label class="form-label">Course Name</label><input class="form-input" id="cert-course" value="Business Analysis Capstone Course"></div>
+    //       <div class="form-group"><label class="form-label">Issue Date</label><input type="date" class="form-input" id="cert-date" value="${new Date().toISOString().split('T')[0]}"></div>
+    //       <button class="btn btn-v btn-full" onclick="generateCertificate()">🏆 Generate & Download Certificate</button>
+    //     </div>
+    //     <div class="card anim-in" style="animation-delay:.1s;">
+    //       <div class="card-header"><div class="card-title">Bulk Certificate Generation</div></div>
+    //       <div class="form-group"><label class="form-label">Select Batch</label>
+    //         <select class="form-input" id="bulk-batch-select">
+    //           <option value="">Choose batch...</option>
+    //           ${batches.map(function (b) { return '<option value="' + b.id + '">' + b.name + '</option>'; }).join('')}
+    //         </select>
+    //       </div>
+    //       <div class="form-group"><label class="form-label">Minimum Attendance %</label><input type="number" class="form-input" id="bulk-min-att" value="75" min="0" max="100"></div>
+    //       <button class="btn btn-v btn-full" onclick="generateBulkCertificates()">🏆 Generate All Certificates</button>
+    //       <p style="font-size:.72rem;color:var(--muted);margin-top:10px;">⚠ This will generate certificates for all eligible students in the batch based on attendance threshold.</p>
+    //     </div>
+    //   </div>
+    //   <div class="card anim-in" style="margin-top:18px;animation-delay:.2s;">
+    //     <div class="card-header"><div class="card-title">Certificate Preview</div></div>
+    //     <div class="cert-preview" id="cert-preview-area" style="max-width:500px;margin:0 auto;">
+    //       <div style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(196,168,240,.6);margin-bottom:8px;">CERTIFICATE OF COMPLETION</div>
+    //       <div style="font-size:.8rem;color:rgba(255,255,255,.6);margin-bottom:4px;">This is to certify that</div>
+    //       <div class="cert-name" id="preview-name">Student Name</div>
+    //       <div class="cert-course" id="preview-course">Business Analysis Capstone Course</div>
+    //       <div style="font-size:.72rem;color:rgba(196,168,240,.6);margin-bottom:12px;">has successfully completed the course at TALeeO Learning</div>
+    //       <div class="cert-badge">🏆 Certified Business Analyst</div>
+    //       <div style="margin-top:14px;font-size:.65rem;color:rgba(255,255,255,.4);" id="preview-date">Issued: ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+    //     </div>
+    //   </div>
+    // `;
+    //     document.getElementById('cert-student-select').addEventListener('change', function () {
+    //       var users = ls('users') || [];
+    //       var s = users.find(function (u) { return u.id === this.value; }, this);
+    //       if (s) document.getElementById('preview-name').textContent = s.name;
+    //     });
+    //   }
+    async function renderAdminCertificates() {
+      var mc = document.getElementById('main-content');
+
+      // Show a quick loading message
+      mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading certificate data...</div>';
+
+      var students = [];
+      var batches = [];
+
+      // 1. Try to fetch from API if USE_SERVER is true
+      if (USE_SERVER) {
+        try {
+          // Fetch Students
+          try {
+            const stuRes = await fetch(`${BACKEND_URL}/admin/students`);
+            if (stuRes.ok) students = await stuRes.json();
+            else students = (ls('users') || []).filter(u => u.role === 'student');
+          } catch (e) {
+            students = (ls('users') || []).filter(u => u.role === 'student');
+          }
+
+          // Fetch Batches
+          try {
+            const batchRes = await fetch(`${BACKEND_URL}/admin/batches`);
+            if (batchRes.ok) batches = await batchRes.json();
+            else batches = ls('batches') || [];
+          } catch (e) {
+            batches = ls('batches') || [];
+          }
+        } catch (error) {
+          console.warn("Backend unavailable, falling back to LocalStorage.", error);
+          // 2. FALLBACK: Use local storage
+          students = (ls('users') || []).filter(u => u.role === 'student');
+          batches = ls('batches') || [];
+        }
+      } else {
+        // 3. ELSE: Use local storage
+        students = (ls('users') || []).filter(u => u.role === 'student');
+        batches = ls('batches') || [];
+      }
+
+      // 4. Render the UI
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Certificate Management</div></div></div>
+    <div class="grid-2">
+      <div class="card anim-in">
+        <div class="card-header"><div class="card-title">Generate Individual Certificate</div></div>
+        <div class="form-group"><label class="form-label">Select Student</label>
+          <select class="form-input" id="cert-student-select">
+            <option value="">Choose student...</option>
+            ${students.map(function (s) { return '<option value="' + s.id + '">' + s.name + ' (' + s.email + ')</option>'; }).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Course Name</label><input class="form-input" id="cert-course" value="Business Analysis Capstone Course"></div>
+        <div class="form-group"><label class="form-label">Issue Date</label><input type="date" class="form-input" id="cert-date" value="${new Date().toISOString().split('T')[0]}"></div>
+        <button class="btn btn-v btn-full" onclick="generateCertificate()">🏆 Generate & Download Certificate</button>
+      </div>
+      <div class="card anim-in" style="animation-delay:.1s;">
+        <div class="card-header"><div class="card-title">Bulk Certificate Generation</div></div>
+        <div class="form-group"><label class="form-label">Select Batch</label>
+          <select class="form-input" id="bulk-batch-select">
+            <option value="">Choose batch...</option>
+            ${batches.map(function (b) { return '<option value="' + b.id + '">' + b.name + '</option>'; }).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Minimum Attendance %</label><input type="number" class="form-input" id="bulk-min-att" value="75" min="0" max="100"></div>
+        <button class="btn btn-v btn-full" onclick="generateBulkCertificates()">🏆 Generate All Certificates</button>
+        <p style="font-size:.72rem;color:var(--muted);margin-top:10px;">⚠ This will generate certificates for all eligible students in the batch based on attendance threshold.</p>
+      </div>
+    </div>
+    <div class="card anim-in" style="margin-top:18px;animation-delay:.2s;">
+      <div class="card-header"><div class="card-title">Certificate Preview</div></div>
+      <div class="cert-preview" id="cert-preview-area" style="max-width:500px;margin:0 auto;">
+        <div style="font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(196,168,240,.6);margin-bottom:8px;">CERTIFICATE OF COMPLETION</div>
+        <div style="font-size:.8rem;color:rgba(255,255,255,.6);margin-bottom:4px;">This is to certify that</div>
+        <div class="cert-name" id="preview-name">Student Name</div>
+        <div class="cert-course" id="preview-course">Business Analysis Capstone Course</div>
+        <div style="font-size:.72rem;color:rgba(196,168,240,.6);margin-bottom:12px;">has successfully completed the course at TALeeO Learning</div>
+        <div class="cert-badge">🏆 Certified Business Analyst</div>
+        <div style="margin-top:14px;font-size:.65rem;color:rgba(255,255,255,.4);" id="preview-date">Issued: ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+      </div>
+    </div>
+  `;
+
+      // 5. Update Preview Listener using the fetched students array
+      document.getElementById('cert-student-select').addEventListener('change', function () {
+        var selectedId = this.value;
+        var s = students.find(function (u) { return u.id === selectedId; });
+
+        if (s) {
+          document.getElementById('preview-name').textContent = s.name;
+        } else {
+          document.getElementById('preview-name').textContent = 'Student Name'; // Reset if none selected
+        }
+      });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       STUDENT PAGES
+    ═══════════════════════════════════════════════════════ */
+    var MODULES = [
+      { id: 1, title: 'Foundations of BA', topics: ['Role of a Business Analyst', 'BA vs Data Analyst vs PM', 'SDLC — Waterfall & Agile', 'Stakeholder Management', 'Business Domains — Banking, FinTech, EdTech'], color: 'v' },
+      { id: 2, title: 'Requirements Gathering', topics: ['Gathering Techniques & Metrics', 'User Stories & Acceptance Criteria', 'Traceability Matrix (RTM)', 'BRD — Business Requirement Document', 'FRD — Functional Requirement Document'], color: 'b' },
+      { id: 3, title: 'Agile, Scrum & Methodologies', topics: ['Scrum Framework & Sprint Planning', 'Backlog Grooming & Roles', 'Waterfall & Hybrid Approaches', 'JIRA Basics & Writing User Stories', 'Methodologies Deep Dive'], color: 'c' },
+      { id: 4, title: 'Process Modelling', topics: ['Use Case Diagrams & Process Flows', 'Flowcharts & Gap Analysis', 'Root Cause Analysis', 'Wireframes — Figma Overview', 'Draw.io & Documentation Tools'], color: 'a' },
+      { id: 5, title: 'UAT & Testing', topics: ['Test Cases & UAT Process', 'Defect Lifecycle', 'Types of Testing & BA\'s Role', 'Working with QA Teams', 'Phase 4–5 BA Responsibilities'], color: 'g' },
+      { id: 6, title: 'Career & Interview Prep', topics: ['Important BA & PM Jargon', 'Resume Building & Portfolio', 'Mock & Panel Interviews', 'BA Roadmap & Golden Rules', 'Reference Notes + Freelancing Workshop'], color: 'r' }
+    ];
+
+    function getStudentBatch() {
+      var batches = ls('batches') || [];
+      return batches.find(function (b) { return b.students.includes(_currentUser.id); }) || null;
+    }
+
+    function renderStudentPage(page) {
+      if (page === 'student-dashboard') renderStudentDashboard();
+      else if (page === 'student-course') renderStudentCourse();
+      else if (page === 'student-recordings') renderStudentRecordings();
+      else if (page === 'student-documents') renderStudentDocuments();
+      else if (page === 'student-attendance') renderStudentAttendance();
+      else if (page === 'student-certificate') renderStudentCertificate();
+    }
+
+    function renderStudentDashboard() {
+      var batch = getStudentBatch();
+      var attendance = ls('attendance') || {};
+      var att = attendance[_currentUser.id] || {};
+      var totalSessions = Math.max(Object.keys(att).length, 10);
+      var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length;
+      var pct = Math.round(presentDays / totalSessions * 100) || 0;
+      var docs = ls('documents') || [];
+      var recs = ls('recordings') || [];
+      var now = new Date();
+      var batchExpired = batch && new Date(batch.end) < now;
+      var mc = document.getElementById('main-content');
+      mc.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-left">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:white;">${_currentUser.name[0]}</div>
+        <div><div class="topbar-title">Welcome, ${_currentUser.name.split(' ')[0]}! 👋</div><div class="topbar-sub">${batch ? batch.name : 'No batch assigned'}</div></div>
+      </div>
+      <div class="topbar-right">${batch ? '<span class="badge ' + (!batchExpired ? 'badge-g' : 'badge-r') + '">' + (!batchExpired ? 'Active' : 'Course Ended') + '</span>' : ''}</div>
+    </div>
+
+    ${batchExpired ? `<div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);border-radius:12px;padding:16px;margin-bottom:20px;font-size:.85rem;color:#fda4af;">⚠️ Your batch has ended on ${batch.end}. Course access is now read-only.</div>` : ''}
+
+    <div class="grid-4" style="margin-bottom:20px;">
+      <div class="stat-card anim-in"><div class="stat-num" style="background:linear-gradient(135deg,var(--v2),var(--v3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${pct}%</div><div class="stat-lbl">Attendance</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.07s"><div class="stat-num" style="background:linear-gradient(135deg,var(--b1),var(--b2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${presentDays}</div><div class="stat-lbl">Classes Attended</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.14s"><div class="stat-num" style="background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${recs.filter(function (r) { return r.batch === (_currentUser.batchId) || r.batch === 'all'; }).length}</div><div class="stat-lbl">Recordings</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.21s"><div class="stat-num" style="background:linear-gradient(135deg,var(--am),#fde68a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${docs.filter(function (d) { return d.batch === 'all' || d.batch === (_currentUser.batchId || ''); }).length}</div><div class="stat-lbl">Documents</div></div>
+    </div>
+
+    ${batch ? `
+    <div class="zoom-card anim-in" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span class="zoom-live-dot"></span><span style="font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:700;color:white;">Live Class — Zoom Meeting</span></div>
+          <div style="font-size:.78rem;color:var(--muted);">${batch.timing} · ${batch.type === 'weekend' ? 'Every Sat & Sun' : 'Mon–Fri'}</div>
+          <div style="font-size:.74rem;color:var(--b2);margin-top:4px;">Meeting ID: ${batch.zoomId} · Passcode: ${batch.zoomPass}</div>
+        </div>
+        <a href="${batch.zoomLink}" target="_blank" class="btn btn-v">🎥 Join Now</a>
+      </div>
+    </div>
+    `: '<div class="card anim-in" style="margin-bottom:20px;text-align:center;padding:24px;"><div style="font-size:1.5rem;margin-bottom:8px;">📭</div><div style="color:var(--muted);font-size:.85rem;">You haven\'t been assigned to a batch yet. Contact admin.</div></div>'}
+
+    <div class="grid-2">
+      <div class="card anim-in">
+        <div class="card-header"><div class="card-title">Course Progress</div></div>
+        ${MODULES.map(function (m, i) {
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:30px;height:30px;border-radius:8px;background:rgba(124,58,237,.15);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--v2);">0${m.id}</div>
+              <div style="font-size:.82rem;font-weight:600;color:white;">${m.title}</div>
+            </div>
+            <span class="badge ${i < 2 ? 'badge-g' : i < 4 ? 'badge-a' : 'badge-r'}">${i < 2 ? 'Complete' : i < 4 ? 'In Progress' : 'Upcoming'}</span>
+          </div>`;
+      }).join('')}
+      </div>
+      <div class="card anim-in" style="animation-delay:.1s;">
+        <div class="card-header"><div class="card-title">Recent Recordings</div><a onclick="navTo('student-recordings',null)" style="font-size:.75rem;color:var(--v2);cursor:pointer;">View All →</a></div>
+        ${recs.slice(0, 4).map(function (r) {
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="width:34px;height:34px;border-radius:8px;background:rgba(239,68,68,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem;">▶</div>
+            <div style="flex:1;"><div style="font-size:.8rem;font-weight:600;color:white;margin-bottom:2px;">${r.title}</div><div style="font-size:.68rem;color:var(--muted);">${r.date} · ${r.duration}</div></div>
+            <a href="${r.url}" target="_blank" class="btn btn-out btn-sm">Watch</a>
+          </div>`;
+      }).join('')}
+      </div>
+    </div>
+  `;
+    }
+
+    function renderStudentCourse() {
+      var mc = document.getElementById('main-content');
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Course Content</div></div></div>
+    <div style="margin-bottom:16px;"><div style="font-size:.8rem;color:var(--muted);">Business Analysis Capstone Course · 6 Modules · 30 Days</div></div>
+    <div class="grid-3">
+      ${MODULES.map(function (m, i) {
+        var colorMap = { v: 'linear-gradient(90deg,var(--v1),var(--v2))', b: 'linear-gradient(90deg,var(--b1),var(--b2))', c: 'linear-gradient(90deg,var(--c1),var(--c2))', a: 'linear-gradient(90deg,var(--am),#fde68a)', g: 'linear-gradient(90deg,var(--gr),#6ee7b7)', r: 'linear-gradient(90deg,var(--ro),#fda4af)' };
+        return `<div class="module-card anim-in" style="animation-delay:${i * 0.07}s;">
+          <div class="mc-top">
+            <div class="mc-num">Module 0${m.id}</div>
+            <div class="mc-title">${m.title}</div>
+            <div style="height:2px;background:${colorMap[m.color]};border-radius:2px;margin-top:8px;"></div>
+          </div>
+          <div style="padding:14px 18px;">
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+              ${m.topics.map(function (t) { return '<li style="font-size:.76rem;color:var(--muted);display:flex;align-items:flex-start;gap:6px;"><span style="color:var(--v2);font-size:.8rem;flex-shrink:0;">›</span>' + t + '</li>'; }).join('')}
+            </ul>
+          </div>
+          <div class="mc-bottom">
+            <span class="mc-topics">${m.topics.length} topics</span>
+            <span class="badge ${i < 2 ? 'badge-g' : i < 4 ? 'badge-a' : 'badge-r'}">${i < 2 ? 'Complete' : i < 4 ? 'In Progress' : 'Upcoming'}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    function renderStudentRecordings() {
+      var recs = ls('recordings') || [];
+      var batch = getStudentBatch();
+      var myRecs = recs.filter(function (r) { return r.batch === 'all' || (batch && r.batch === batch.id); });
+      var mc = document.getElementById('main-content');
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Class Recordings</div><div class="topbar-sub">Watch missed classes anytime</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      ${myRecs.length === 0 ? '<div class="card" style="text-align:center;padding:40px;"><div style="font-size:2rem;margin-bottom:10px;">🎥</div><div style="color:var(--muted);">No recordings yet. Check back after your first class.</div></div>' : ''}
+      ${myRecs.map(function (r, i) {
+        return `<div class="day-card anim-in" style="animation-delay:${i * 0.06}s;">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:50px;height:50px;border-radius:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">▶</div>
+              <div>
+                <div class="dc-day">${r.date}</div>
+                <div class="dc-title">${r.title}</div>
+                <div class="dc-meta">
+                  <span class="badge badge-b">⏱ ${r.duration}</span>
+                  <span style="font-size:.72rem;color:var(--muted);">${r.topics}</span>
+                </div>
+              </div>
+            </div>
+            <a href="${r.url}" target="_blank" class="btn btn-v btn-sm">▶ Watch Recording</a>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    function renderStudentDocuments() {
+      var docs = ls('documents') || [];
+      var mc = document.getElementById('main-content');
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">Notes & Documents</div></div></div>
+    <div class="tabs" style="margin-bottom:20px;">
+      <div class="tab active" onclick="filterDocs('all',this)">All</div>
+      ${['Module 01', 'Module 02', 'Module 03', 'Module 04', 'Module 05', 'Module 06'].map(function (m) { return '<div class="tab" onclick="filterDocs(\'' + m + '\',this)">' + m.split(' ').slice(0, 2).join(' ') + '</div>'; }).join('')}
+    </div>
+    <div class="grid-auto" id="docs-grid">
+      ${docs.map(function (d) {
+        var icons = { pdf: '📄', template: '📋', assignment: '📝', reference: '📖', recording: '🎥' };
+        var colors = { pdf: 'badge-v', template: 'badge-b', assignment: 'badge-a', reference: 'badge-c', recording: 'badge-g' };
+        return `<div class="card anim-in" data-module="${d.module}">
+          <div style="font-size:2rem;margin-bottom:10px;">${icons[d.type] || '📄'}</div>
+          <div style="font-size:.88rem;font-weight:700;color:white;margin-bottom:5px;">${d.title}</div>
+          <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${d.module}</div>
+          <span class="badge ${colors[d.type] || 'badge-v'}" style="margin-bottom:10px;">${d.type}</span>
+          <br>
+          <a href="${d.url}" target="_blank" class="btn btn-v btn-sm" style="margin-top:10px;">Open ↗</a>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+    }
+
+    function filterDocs(module, el) {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+      el.classList.add('active');
+      document.querySelectorAll('[data-module]').forEach(function (c) {
+        c.style.display = (module === 'all' || c.dataset.module === module) ? 'block' : 'none';
+      });
+    }
+
+    function renderStudentAttendance() {
+      var attendance = ls('attendance') || {};
+      var att = attendance[_currentUser.id] || {};
+      var dates = Object.keys(att).sort();
+      var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length;
+      var totalSessions = Math.max(dates.length, 10);
+      var pct = Math.round(presentDays / totalSessions * 100) || 0;
+      var mc = document.getElementById('main-content');
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">My Attendance</div></div></div>
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="stat-card anim-in"><div class="stat-num" style="color:${pct >= 75 ? '#6ee7b7' : pct >= 50 ? '#fde68a' : '#fda4af'};">${pct}%</div><div class="stat-lbl">Overall Attendance</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.07s"><div class="stat-num" style="color:#6ee7b7;">${presentDays}</div><div class="stat-lbl">Days Present</div></div>
+      <div class="stat-card anim-in" style="animation-delay:.14s"><div class="stat-num" style="color:#fda4af;">${totalSessions - presentDays}</div><div class="stat-lbl">Days Absent</div></div>
+    </div>
+    <div class="card anim-in">
+      <div class="card-header">
+        <div><div class="card-title">Attendance Record</div><div class="card-sub">${pct >= 75 ? '✅ Great! You\'re on track.' : pct >= 50 ? '⚠️ Attendance is below recommended 75%.' : '❌ Critical: Attendance is very low. Please attend classes regularly.'}</div></div>
+      </div>
+      <div class="att-bar" style="height:12px;margin-bottom:16px;"><div class="att-present" style="width:${pct}%;"></div><div class="att-absent" style="width:${100 - pct}%;"></div></div>
+      ${dates.length === 0 ? '<p style="color:var(--muted);font-size:.82rem;text-align:center;padding:20px;">No attendance records yet.</p>' : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${dates.map(function (d) {
+        return `<div style="background:${att[d] === 'present' ? 'rgba(16,185,129,.1)' : 'rgba(244,63,94,.1)'};border:1px solid ${att[d] === 'present' ? 'rgba(16,185,129,.3)' : 'rgba(244,63,94,.3)'};border-radius:8px;padding:8px 12px;text-align:center;">
+            <div style="font-size:.65rem;color:var(--muted);">${d}</div>
+            <div style="font-size:.75rem;font-weight:700;color:${att[d] === 'present' ? '#6ee7b7' : '#fda4af'};margin-top:2px;">${att[d] === 'present' ? '✓ Present' : '✗ Absent'}</div>
+          </div>`;
+      }).join('')}
+      </div>
+    </div>
+  `;
+    }
+
+    function renderStudentCertificate() {
+      var attendance = ls('attendance') || {};
+      var att = attendance[_currentUser.id] || {};
+      var totalSessions = Math.max(Object.keys(att).length, 10);
+      var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length;
+      var pct = Math.round(presentDays / totalSessions * 100) || 0;
+      var eligible = pct >= 75;
+      var mc = document.getElementById('main-content');
+      mc.innerHTML = `
+    <div class="topbar"><div class="topbar-left"><div class="topbar-title">My Certificate</div></div></div>
+    <div class="grid-2">
+      <div class="card anim-in">
+        <div class="card-title" style="margin-bottom:12px;">Certificate Status</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--panel2);border-radius:10px;"><span style="font-size:.82rem;">Attendance (min 75%)</span><span style="font-weight:700;color:${pct >= 75 ? '#6ee7b7' : '#fda4af'};">${pct}% ${pct >= 75 ? '✓' : '✗'}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--panel2);border-radius:10px;"><span style="font-size:.82rem;">Course Modules</span><span style="font-weight:700;color:#fde68a;">In Progress</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--panel2);border-radius:10px;"><span style="font-size:.82rem;">Admin Approval</span><span style="font-weight:700;color:${eligible ? '#6ee7b7' : 'var(--muted)'};">${eligible ? 'Eligible' : 'Pending'}</span></div>
+        </div>
+        ${eligible ? `<button class="btn btn-v btn-full" style="margin-top:16px;" onclick="downloadMyCertificate()">🏆 Download My Certificate</button>` : `<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px;margin-top:16px;font-size:.8rem;color:#fde68a;">Complete at least 75% attendance to unlock your certificate.</div>`}
+      </div>
+      <div class="anim-in" style="animation-delay:.1s;">
+        <div class="cert-preview">
+          <div style="font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(196,168,240,.6);margin-bottom:8px;">CERTIFICATE OF COMPLETION</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.6);margin-bottom:4px;">This is to certify that</div>
+          <div class="cert-name">${_currentUser.name}</div>
+          <div class="cert-course">Business Analysis Capstone Course</div>
+          <div style="font-size:.7rem;color:rgba(196,168,240,.6);margin-bottom:12px;">has successfully completed the course at TALeeO Learning</div>
+          <div class="cert-badge">🏆 Certified Business Analyst</div>
+          <div style="margin-top:12px;font-size:.62rem;color:rgba(255,255,255,.35);">Issued: ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        </div>
+      </div>
+    </div>
+  `;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ACTION FUNCTIONS
+    ═══════════════════════════════════════════════════════ */
+    function openModal(id) {
+      // populate selects in modals
+      var batches = ls('batches') || [];
+      ['new-student-batch', 'doc-batch', 'rec-batch', 'bulk-batch-select'].forEach(function (sid) {
+        var el = document.getElementById(sid);
+        if (el) {
+          var opts = sid === 'doc-batch' || sid === 'rec-batch' ? '<option value="all">All Batches</option>' : '<option value="">Select batch</option>';
+          opts += batches.map(function (b) { return '<option value="' + b.id + '">' + b.name + '</option>'; }).join('');
+          el.innerHTML = opts;
+        }
+      });
+      document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    function openInviteForBatch(batchId) {
+      openModal('modal-add-student');
+      setTimeout(function () {
+        var el = document.getElementById('new-student-batch');
+        if (el) el.value = batchId;
+      }, 50);
+    }
+
+    // function inviteStudent() {
+    //   var name = document.getElementById('new-student-name').value.trim();
+    //   var email = document.getElementById('new-student-email').value.trim();
+    //   var phone = document.getElementById('new-student-phone').value.trim().replace(/\D/g, '');
+    //   var batchId = document.getElementById('new-student-batch').value;
+    //   if (!name || !email) { showToast('Please enter name and email.', '❌'); return; }
+    //   var users = ls('users') || [];
+    //   if (users.find(function (u) { return u.email.toLowerCase() === email.toLowerCase(); })) { showToast('Student with this email already exists!', '⚠️'); return; }
+    //   var password = name.split(' ')[0].toLowerCase() + '@' + Math.floor(Math.random() * 900 + 100);
+    //   var id = 's' + Date.now();
+    //   var newUser = { id: id, name: name, email: email.toLowerCase(), password: password, role: 'student', phone: phone || '', firstLogin: false, avatar: name[0].toUpperCase(), batchId: batchId || null };
+    //   users.push(newUser); ls('users', users);
+    //   if (batchId) {
+    //     var batches = ls('batches') || [];
+    //     var bi = batches.findIndex(function (b) { return b.id === batchId; });
+    //     if (bi >= 0 && !batches[bi].students.includes(id)) { batches[bi].students.push(id); ls('batches', batches); }
+    //   }
+    //   closeModal('modal-add-student');
+    //   showToast('✅ ' + name + ' invited! Credentials: ' + email + ' / ' + password, '📧');
+    //   // Reset fields
+    //   ['new-student-name', 'new-student-email', 'new-student-phone'].forEach(function (f) { document.getElementById(f).value = ''; });
+    //   renderAdminStudents();
+    // }
+    async function inviteStudent() {
+      var name = document.getElementById('new-student-name').value.trim();
+      var email = document.getElementById('new-student-email').value.trim();
+      var phone = document.getElementById('new-student-phone').value.trim().replace(/\D/g, '');
+      var batchId = document.getElementById('new-student-batch').value;
+
+      if (!name || !email) { showToast('Please enter name and email.', '❌'); return; }
+
+      // We keep generating the password on the frontend so we can show it in the Toast
+      var password = name.split(' ')[0].toLowerCase() + '@' + Math.floor(Math.random() * 900 + 100);
+
+      var studentPayload = {
+        name: name,
+        email: email.toLowerCase(),
+        password: password,
+        role: 'student',
+        phone: phone || '',
+        firstLogin: false,
+        avatar: name[0].toUpperCase(),
+        batchId: batchId || null
+      };
+
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/students`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(studentPayload)
+          });
+
+          if (response.status === 409) {
+            showToast('Student with this email already exists!', '⚠️');
+            return;
+          }
+          if (!response.ok) throw new Error('Server failed to invite student');
+
+          showToast('✅ ' + name + ' invited! Credentials: ' + email + ' / ' + password, '📧');
+        } catch (error) {
+          console.warn("Backend unavailable, saving to LocalStorage.", error);
+          handleStudentLocalSave(studentPayload, batchId); // See helper function below
+        }
+      } else {
+        handleStudentLocalSave(studentPayload, batchId);
+      }
+
+      closeModal('modal-add-student');
+      ['new-student-name', 'new-student-email', 'new-student-phone'].forEach(function (f) { document.getElementById(f).value = ''; });
+      renderAdminStudents();
+    }
+
+    // Helper function to keep your original local storage logic clean
+    function handleStudentLocalSave(payload, batchId) {
+      var users = ls('users') || [];
+      if (users.find(function (u) { return u.email === payload.email; })) {
+        showToast('Student with this email already exists!', '⚠️');
+        return;
+      }
+
+      var id = 's' + Date.now();
+      users.push({ id: id, ...payload });
+      ls('users', users);
+
+      if (batchId) {
+        var batches = ls('batches') || [];
+        var bi = batches.findIndex(function (b) { return b.id === batchId; });
+        if (bi >= 0 && !batches[bi].students.includes(id)) {
+          batches[bi].students.push(id);
+          ls('batches', batches);
+        }
+      }
+      showToast('✅ ' + payload.name + ' invited locally (Server Offline).', '⚠️');
+    }
+
+    // function createBatch() {
+    //   var name = document.getElementById('new-batch-name').value.trim();
+    //   var type = document.getElementById('new-batch-type').value;
+    //   var start = document.getElementById('new-batch-start').value;
+    //   var end = document.getElementById('new-batch-end').value;
+    //   var timing = document.getElementById('new-batch-timing').value.trim() || 'TBD';
+    //   var zoom = document.getElementById('new-batch-zoom').value.trim() || '#';
+    //   var zoomId = document.getElementById('new-batch-zoom-id').value.trim() || 'TBD';
+    //   var zoomPass = document.getElementById('new-batch-zoom-pass').value.trim() || 'TBD';
+    //   if (!name || !start || !end) { showToast('Please fill name, start and end dates.', '❌'); return; }
+    //   var batches = ls('batches') || [];
+    //   batches.push({ id: 'b' + Date.now(), name: name, type: type, start: start, end: end, timing: timing, zoomLink: zoom, zoomId: zoomId, zoomPass: zoomPass, active: true, students: [] });
+    //   ls('batches', batches);
+    //   closeModal('modal-add-batch');
+    //   showToast('Batch "' + name + '" created!', '✅');
+    //   ['new-batch-name', 'new-batch-start', 'new-batch-end', 'new-batch-timing', 'new-batch-zoom', 'new-batch-zoom-id', 'new-batch-zoom-pass'].forEach(function (f) { document.getElementById(f).value = ''; });
+    //   renderAdminBatches();
+    // }
+    async function createBatch() {
+      var name = document.getElementById('new-batch-name').value.trim();
+      var type = document.getElementById('new-batch-type').value;
+      var start = document.getElementById('new-batch-start').value;
+      var end = document.getElementById('new-batch-end').value;
+      var timing = document.getElementById('new-batch-timing').value.trim() || 'TBD';
+      var zoom = document.getElementById('new-batch-zoom').value.trim() || '#';
+      var zoomId = document.getElementById('new-batch-zoom-id').value.trim() || 'TBD';
+      var zoomPass = document.getElementById('new-batch-zoom-pass').value.trim() || 'TBD';
+
+      if (!name || !start || !end) {
+        showToast('Please fill name, start and end dates.', '❌');
+        return;
+      }
+
+      // 1. Prepare the payload (Your backend service handles adding id, active, and students)
+      var batchPayload = {
+        name: name,
+        type: type,
+        start: start,
+        end: end,
+        timing: timing,
+        zoomLink: zoom,
+        zoomId: zoomId,
+        zoomPass: zoomPass
+      };
+
+      // 2. Try to POST to the API if USE_SERVER is true
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/batches`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(batchPayload)
+          });
+
+          if (!response.ok) throw new Error('Server failed to create batch');
+
+          showToast('Batch "' + name + '" created successfully!', '✅');
+
+        } catch (error) {
+          console.warn("Backend unavailable, saving to LocalStorage.", error);
+          // FALLBACK: If the server is offline, save it locally so the app doesn't break
+          var batches = ls('batches') || [];
+          batches.push({ id: 'b' + Date.now(), ...batchPayload, active: true, students: [] });
+          ls('batches', batches);
+          showToast('Batch created locally (Server Offline).', '⚠️');
+        }
+      } else {
+        // 3. ELSE: If USE_SERVER is explicitly false, use local storage
+        var batches = ls('batches') || [];
+        batches.push({ id: 'b' + Date.now(), ...batchPayload, active: true, students: [] });
+        ls('batches', batches);
+        showToast('Batch "' + name + '" created!', '✅');
+      }
+
+      // 4. Clean up the UI
+      closeModal('modal-add-batch');
+
+      ['new-batch-name', 'new-batch-start', 'new-batch-end', 'new-batch-timing', 'new-batch-zoom', 'new-batch-zoom-id', 'new-batch-zoom-pass'].forEach(function (f) {
+        document.getElementById(f).value = '';
+      });
+
+      // 5. Refresh the UI to show the new batch
+      renderAdminBatches();
+    }
+
+    function toggleBatch(id) {
+      var batches = ls('batches') || [];
+      var i = batches.findIndex(function (b) { return b.id === id; });
+      if (i >= 0) { batches[i].active = !batches[i].active; ls('batches', batches); }
+      renderAdminBatches();
+      showToast('Batch status updated.', '✅');
+    }
+
+    // function uploadDocument() {
+    //   var title = document.getElementById('doc-title').value.trim();
+    //   var module = document.getElementById('doc-module').value;
+    //   var batch = document.getElementById('doc-batch').value;
+    //   var url = document.getElementById('doc-url').value.trim() || '#';
+    //   var type = document.getElementById('doc-type').value;
+    //   if (!title) { showToast('Please enter a document title.', '❌'); return; }
+    //   var docs = ls('documents') || [];
+    //   docs.push({ id: 'd' + Date.now(), title: title, module: module, batch: batch, url: url, type: type, uploadedAt: new Date().toISOString().split('T')[0] });
+    //   ls('documents', docs);
+    //   closeModal('modal-upload-doc');
+    //   showToast('Document "' + title + '" uploaded!', '✅');
+    //   document.getElementById('doc-title').value = '';
+    //   document.getElementById('doc-url').value = '';
+    //   renderAdminDocuments();
+    // }
+    async function uploadDocument() {
+      var title = document.getElementById('doc-title').value.trim();
+      var module = document.getElementById('doc-module').value;
+      var batch = document.getElementById('doc-batch').value;
+      var url = document.getElementById('doc-url').value.trim() || '#';
+      var type = document.getElementById('doc-type').value;
+
+      if (!title) { showToast('Please enter a document title.', '❌'); return; }
+
+      var docPayload = {
+        title: title,
+        module: module,
+        batch: batch,
+        url: url,
+        type: type,
+        uploadedAt: new Date().toISOString().split('T')[0]
+      };
+
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/documents`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(docPayload)
+          });
+          if (!response.ok) throw new Error('Server failed to upload document');
+          showToast('Document "' + title + '" uploaded!', '✅');
+        } catch (error) {
+          console.warn("Backend unavailable, saving to LocalStorage.", error);
+          var docs = ls('documents') || [];
+          docs.push({ id: 'd' + Date.now(), ...docPayload });
+          ls('documents', docs);
+          showToast('Document saved locally (Server Offline).', '⚠️');
+        }
+      } else {
+        var docs = ls('documents') || [];
+        docs.push({ id: 'd' + Date.now(), ...docPayload });
+        ls('documents', docs);
+        showToast('Document "' + title + '" uploaded!', '✅');
+      }
+
+      closeModal('modal-upload-doc');
+      document.getElementById('doc-title').value = '';
+      document.getElementById('doc-url').value = '';
+      renderAdminDocuments();
+    }
+
+    function deleteDoc(id) {
+      if (!confirm('Delete this document?')) return;
+      var docs = (ls('documents') || []).filter(function (d) { return d.id !== id; });
+      ls('documents', docs); renderAdminDocuments();
+      showToast('Document deleted.', '🗑️');
+    }
+
+    // function addRecording() {
+    //   var title = document.getElementById('rec-title').value.trim();
+    //   var date = document.getElementById('rec-date').value;
+    //   var dur = document.getElementById('rec-duration').value.trim() || '—';
+    //   var url = document.getElementById('rec-url').value.trim() || '#';
+    //   var batch = document.getElementById('rec-batch').value;
+    //   var topics = document.getElementById('rec-topics').value.trim() || '—';
+    //   if (!title || !date) { showToast('Please enter title and date.', '❌'); return; }
+    //   var recs = ls('recordings') || [];
+    //   recs.push({ id: 'r' + Date.now(), title: title, date: date, duration: dur, url: url, batch: batch, topics: topics });
+    //   ls('recordings', recs);
+    //   closeModal('modal-add-recording');
+    //   showToast('Recording added!', '✅');
+    //   ['rec-title', 'rec-date', 'rec-duration', 'rec-url', 'rec-topics'].forEach(function (f) { document.getElementById(f).value = ''; });
+    //   renderAdminRecordings();
+    // }
+    async function addRecording() {
+      var title = document.getElementById('rec-title').value.trim();
+      var date = document.getElementById('rec-date').value;
+      var dur = document.getElementById('rec-duration').value.trim() || '—';
+      var url = document.getElementById('rec-url').value.trim() || '#';
+      var batch = document.getElementById('rec-batch').value;
+      var topics = document.getElementById('rec-topics').value.trim() || '—';
+
+      if (!title || !date) { showToast('Please enter title and date.', '❌'); return; }
+
+      var recPayload = {
+        title: title,
+        date: date,
+        duration: dur,
+        url: url,
+        batch: batch,
+        topics: topics
+      };
+
+      if (USE_SERVER) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/admin/recordings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(recPayload)
+          });
+          if (!response.ok) throw new Error('Server failed to add recording');
+          showToast('Recording added!', '✅');
+        } catch (error) {
+          console.warn("Backend unavailable, saving to LocalStorage.", error);
+          var recs = ls('recordings') || [];
+          recs.push({ id: 'r' + Date.now(), ...recPayload });
+          ls('recordings', recs);
+          showToast('Recording added locally (Server Offline).', '⚠️');
+        }
+      } else {
+        var recs = ls('recordings') || [];
+        recs.push({ id: 'r' + Date.now(), ...recPayload });
+        ls('recordings', recs);
+        showToast('Recording added!', '✅');
+      }
+
+      closeModal('modal-add-recording');
+      ['rec-title', 'rec-date', 'rec-duration', 'rec-url', 'rec-topics'].forEach(function (f) { document.getElementById(f).value = ''; });
+      renderAdminRecordings();
+    }
+
+    function deleteRec(id) {
+      if (!confirm('Delete this recording?')) return;
+      var recs = (ls('recordings') || []).filter(function (r) { return r.id !== id; });
+      ls('recordings', recs); renderAdminRecordings();
+      showToast('Recording deleted.', '🗑️');
+    }
+
+    function removeStudent(id) {
+      if (!confirm('Remove this student from the LMS?')) return;
+      var users = (ls('users') || []).filter(function (u) { return u.id !== id; });
+      var batches = ls('batches') || [];
+      batches.forEach(function (b) { b.students = b.students.filter(function (s) { return s !== id; }); });
+      ls('users', users); ls('batches', batches);
+      renderAdminStudents(); showToast('Student removed.', '🗑️');
+    }
+
+    function openAttendanceModal() {
+      var users = ls('users') || [];
+      var students = users.filter(function (u) { return u.role === 'student'; });
+      var today = new Date().toISOString().split('T')[0];
+      document.getElementById('att-session-name').textContent = today;
+      var list = document.getElementById('att-list');
+      list.innerHTML = students.map(function (s) {
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--panel);border-radius:9px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:white;">${s.name[0]}</div>
+        <div><div style="font-size:.83rem;font-weight:600;color:white;">${s.name}</div><div style="font-size:.68rem;color:var(--muted);">${s.email}</div></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:.78rem;color:#6ee7b7;"><input type="radio" name="att_${s.id}" value="present" checked> Present</label>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:.78rem;color:#fda4af;"><input type="radio" name="att_${s.id}" value="absent"> Absent</label>
+      </div>
+    </div>`;
+      }).join('');
+      if (students.length === 0) list.innerHTML = '<p style="color:var(--muted);font-size:.82rem;text-align:center;">No students enrolled yet.</p>';
+      openModal('modal-attendance');
+    }
+
+    function saveAttendance() {
+      var users = ls('users') || [];
+      var students = users.filter(function (u) { return u.role === 'student'; });
+      var today = new Date().toISOString().split('T')[0];
+      var attendance = ls('attendance') || {};
+      students.forEach(function (s) {
+        var radio = document.querySelector('input[name="att_' + s.id + '"]:checked');
+        if (radio) {
+          if (!attendance[s.id]) attendance[s.id] = {};
+          attendance[s.id][today] = radio.value;
+        }
+      });
+      ls('attendance', attendance);
+      closeModal('modal-attendance');
+      showToast('Attendance saved for ' + today + '!', '✅');
+      renderAdminAttendance();
+    }
+
+    // ── CERTIFICATES ──
+    // function generateCertificate(name, course, dateStr) {
+    //   var n = name || document.getElementById('cert-student-select');
+    //   if (typeof n !== 'string') {
+    //     var users = ls('users') || [];
+    //     var sid = n.value;
+    //     if (!sid) { showToast('Please select a student.', '❌'); return; }
+    //     var student = users.find(function (u) { return u.id === sid; });
+    //     if (!student) { showToast('Student not found.', '❌'); return; }
+    //     n = student.name;
+    //   }
+    //   var c = course || document.getElementById('cert-course').value || 'Business Analysis Capstone Course';
+    //   var d = dateStr || (document.getElementById('cert-date') ? document.getElementById('cert-date').value : new Date().toISOString().split('T')[0]);
+    //   var canvas = document.getElementById('cert-canvas');
+    //   var ctx = canvas.getContext('2d');
+    //   canvas.width = 900; canvas.height = 636;
+    //   // Background
+    //   var bg = ctx.createLinearGradient(0, 0, 900, 636);
+    //   bg.addColorStop(0, '#1a0a2e'); bg.addColorStop(0.5, '#2d1060'); bg.addColorStop(1, '#0d2137');
+    //   ctx.fillStyle = bg; ctx.fillRect(0, 0, 900, 636);
+    //   // Border
+    //   ctx.strokeStyle = 'rgba(196,168,240,0.4)'; ctx.lineWidth = 3;
+    //   ctx.strokeRect(20, 20, 860, 596);
+    //   ctx.strokeStyle = 'rgba(66,165,245,0.2)'; ctx.lineWidth = 1;
+    //   ctx.strokeRect(28, 28, 844, 580);
+    //   // Top gradient line
+    //   var topLine = ctx.createLinearGradient(0, 0, 900, 0);
+    //   topLine.addColorStop(0, '#7c3aed'); topLine.addColorStop(0.5, '#1877f2'); topLine.addColorStop(1, '#7c3aed');
+    //   ctx.fillStyle = topLine; ctx.fillRect(20, 20, 860, 4);
+    //   // TALeeO
+    //   ctx.fillStyle = 'rgba(196,168,240,0.7)'; ctx.font = 'bold 13px Poppins,sans-serif'; ctx.textAlign = 'center';
+    //   ctx.fillText('TALeeO LEARNING', 450, 70);
+    //   // Certificate title
+    //   ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.font = '18px Poppins,sans-serif';
+    //   ctx.fillText('CERTIFICATE OF COMPLETION', 450, 100);
+    //   // Divider
+    //   ctx.fillStyle = 'rgba(196,168,240,0.3)'; ctx.fillRect(200, 115, 500, 1);
+    //   // Certify text
+    //   ctx.fillStyle = 'rgba(144,202,249,0.75)'; ctx.font = '14px Georgia,serif';
+    //   ctx.fillText('This is to certify that', 450, 150);
+    //   // Student name
+    //   var nameGrad = ctx.createLinearGradient(200, 170, 700, 200);
+    //   nameGrad.addColorStop(0, '#ffffff'); nameGrad.addColorStop(0.5, '#c4b5fd'); nameGrad.addColorStop(1, '#93c5fd');
+    //   ctx.fillStyle = nameGrad; ctx.font = 'bold 42px Georgia,serif';
+    //   ctx.fillText(n, 450, 200);
+    //   // Underline
+    //   ctx.fillStyle = 'rgba(124,58,237,0.5)'; ctx.fillRect(200, 210, 500, 1);
+    //   // Has completed
+    //   ctx.fillStyle = 'rgba(144,202,249,0.75)'; ctx.font = '14px Georgia,serif';
+    //   ctx.fillText('has successfully completed the', 450, 245);
+    //   // Course name
+    //   ctx.fillStyle = '#fde68a'; ctx.font = 'bold 22px Poppins,sans-serif';
+    //   ctx.fillText(c, 450, 280);
+    //   // Description
+    //   ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '13px Georgia,serif';
+    //   ctx.fillText('A comprehensive training in Business Analysis, SDLC, Agile & Project Management', 450, 315);
+    //   // Badge area
+    //   ctx.fillStyle = 'rgba(240,192,64,0.12)'; roundRect(ctx, 300, 340, 300, 50, 8); ctx.fill();
+    //   ctx.strokeStyle = 'rgba(240,192,64,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+    //   ctx.fillStyle = '#fde68a'; ctx.font = 'bold 14px Poppins,sans-serif';
+    //   ctx.fillText('🏆  Certified Business Analyst', 450, 372);
+    //   // Date and signatures
+    //   var issueDate = new Date(d).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    //   ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '12px Georgia,serif';
+    //   ctx.textAlign = 'left'; ctx.fillText('Issue Date: ' + issueDate, 80, 480);
+    //   ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.textAlign = 'right';
+    //   ctx.fillText('TALeeO Learning', 820, 480);
+    //   ctx.fillStyle = 'rgba(196,168,240,0.3)'; ctx.fillRect(80, 460, 200, 1); ctx.fillRect(620, 460, 200, 1);
+    //   ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.font = '11px Poppins,sans-serif';
+    //   ctx.textAlign = 'left'; ctx.fillText('Date of Issue', 80, 495);
+    //   ctx.textAlign = 'right'; ctx.fillText('Authorized Signatory', 820, 495);
+    //   // Bottom
+    //   ctx.fillStyle = 'rgba(144,202,249,0.25)'; ctx.textAlign = 'center'; ctx.font = '11px Poppins,sans-serif';
+    //   ctx.fillText('taleeolearnings@gmail.com  ·  taleeolearning.in  ·  © 2026 TALeeO Learnings', 450, 570);
+    //   // Download
+    //   var a = document.createElement('a');
+    //   a.download = 'TALeeO-Certificate-' + n.replace(/\s/g, '_') + '.png';
+    //   a.href = canvas.toDataURL('image/png');
+    //   a.click();
+    //   showToast('Certificate generated for ' + n + '!', '🏆');
+    // }
+    // ── CERTIFICATES ──
+    async function generateCertificate(name, course, dateStr) {
+      // 1. Get the values (either passed in, or from the form)
+      var studentName = name;
+      if (!studentName) {
+        var selectEl = document.getElementById('cert-student-select');
+        if (!selectEl || !selectEl.value) { showToast('Please select a student.', '❌'); return; }
+        // Extract just the name from the dropdown (ignores the email part)
+        studentName = selectEl.options[selectEl.selectedIndex].text.split(' (')[0];
+      }
+
+      var courseName = course || document.getElementById('cert-course').value || 'Business Analysis Capstone Course';
+      var issueDate = dateStr || (document.getElementById('cert-date') ? document.getElementById('cert-date').value : new Date().toISOString().split('T')[0]);
+
+      // Format the date nicely (e.g., 30 March 2026)
+      var formattedDate = new Date(issueDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // 2. Update the HTML preview DIV with these exact values
+      var previewArea = document.getElementById('cert-preview-area');
+      if (!previewArea) { showToast('Certificate preview area not found.', '❌'); return; }
+
+      document.getElementById('preview-name').textContent = studentName;
+      document.getElementById('preview-course').textContent = courseName;
+      document.getElementById('preview-date').textContent = 'Issued: ' + formattedDate;
+
+      try {
+        // 3. Take a snapshot of the HTML DIV using html2canvas
+        // scale: 2 makes the downloaded image double the resolution (sharper text)
+        const canvas = await html2canvas(previewArea, {
+          scale: 2,
+          backgroundColor: '#1a0a2e', // Ensures the dark background carries over
+          useCORS: true
+        });
+
+        // 4. Trigger the download
+        var a = document.createElement('a');
+        a.download = 'TALeeO-Certificate-' + studentName.replace(/\s/g, '_') + '.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+
+        showToast('Certificate generated for ' + studentName + '!', '🏆');
+      } catch (err) {
+        console.error("Error generating certificate image:", err);
+        showToast('Error generating certificate.', '❌');
+      }
+    }
+
+    function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+
+    function generateBulkCertificates() {
+      var batchId = document.getElementById('bulk-batch-select').value;
+      var minAtt = parseInt(document.getElementById('bulk-min-att').value) || 75;
+      if (!batchId) { showToast('Please select a batch.', '❌'); return; }
+      var batches = ls('batches') || [];
+      var batch = batches.find(function (b) { return b.id === batchId; });
+      if (!batch) { showToast('Batch not found.', '❌'); return; }
+      var users = ls('users') || [];
+      var attendance = ls('attendance') || {};
+      var students = users.filter(function (u) { return batch.students.includes(u.id); });
+      var count = 0;
+      students.forEach(function (s) {
+        var att = attendance[s.id] || {};
+        var totalSessions = Math.max(Object.keys(att).length, 10);
+        var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length;
+        var pct = Math.round(presentDays / totalSessions * 100) || 0;
+        if (pct >= minAtt) {
+          setTimeout(function () { generateCertificate(s.name, 'Business Analysis Capstone Course', new Date().toISOString().split('T')[0]); }, count * 800);
+          count++;
+        }
+      });
+      showToast('Generating ' + count + ' certificates...', '🏆');
+    }
+
+    function downloadMyCertificate() {
+      generateCertificate(_currentUser.name, 'Business Analysis Capstone Course', new Date().toISOString().split('T')[0]);
+    }
+
+    // ── TOAST ──
+    function showToast(msg, icon) {
+      var t = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      t.querySelector('.toast-icon').textContent = (icon || '✅') + ' ';
+      t.classList.add('show');
+      setTimeout(function () { t.classList.remove('show'); }, 3500);
+    }
+
+    // ── INIT ──
+    initData();// Run the check immediately on load
+    checkSession();
+  </script>
+</body>
+
+</html>
