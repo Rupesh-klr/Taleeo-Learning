@@ -1105,7 +1105,7 @@ function openBatchModal(batchId = null, courseId = null) {
                 <div class="modal-title">${isEdit ? 'Update' : 'Create'} Batch</div>
                 <div class="modal-sub">Course ID: ${courseId || b.courseId || 'Select in next step'}</div>
                 
-                <div class="form-group"><label class="form-label">Batch Name</label>
+                <div class="form-group"><label class="form-label">Name</label>
                     <input class="form-input" id="in-b-name" value="${b.name || ''}">
                 </div>
                 <div class="grid-2">
