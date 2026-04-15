@@ -1786,6 +1786,7 @@ function renderBatchCard(b) {
 }
 
 async function inviteStudent() {
+  const defaultPassword = "Taleeolearnings@123";
   const name = document.getElementById('new-student-name').value.trim();
   const email = document.getElementById('new-student-email').value.trim();
   const phone = document.getElementById('new-student-phone').value.trim().replace(/\D/g, '');
@@ -1800,12 +1801,13 @@ async function inviteStudent() {
   const studentPayload = {
     name: name,
     email: email.toLowerCase(),
-    password: 'admin123', // Default password as requested
+    password: defaultPassword,
     role: 'student',
     phone: phone || '',
     firstLogin: false,
     avatar: name[0].toUpperCase(),
-    batchId: batchId || null
+    batchId: batchId || null,
+    isDeleted:false
   };
 
   if (USE_SERVER) {
@@ -1823,35 +1825,66 @@ async function inviteStudent() {
         return;
       }
       if (!response.ok) throw new Error('Server failed to invite student');
-const currentHost = window.location.hostname;
+      const currentHost = window.location.hostname;
 
-// Your updated message
-// const message = ;
-
-      // 2. Trigger EmailJS after successful DB creation
-      const emailParams = {
-        lib_version: "3.10.0",
+      const emailParamsDetails = [{
+        user_id: "FyY5ZX4PxPfh1j827",
+        service_id: "service_a33f5be",
+        template_id: "template_h422m6f"
+      }, {
         user_id: "V3Y_MKWFWmMy-rl-t",
         service_id: "service_v1t534c",
-        template_id: "template_6ige124",
-        template_params: {
-          title: "Welcome to TALeeO LMS",
-          name: name,
-          intro: "Your account has been successfully created.",
-          phone: phone || "N/A",
-          email: email,
-          message: `Login URL: http://${currentHost}<br>Email: ${email}<br>Default password: admin123<br>Assigned batch: ${batchId || 'Not assigned'}`,
-          time: new Date().toLocaleString()
-        }
-      };
+        template_id: "template_0m4yuja"
+      }];
 
-      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailParams)
-      });
+      async function sendInviteEmailWithTemplate(templateConfig) {
+        const emailParams = {
+          lib_version: "3.10.0",
+          user_id: templateConfig.user_id,
+          service_id: templateConfig.service_id,
+          template_id: templateConfig.template_id,
+          template_params: {
+            title: "Welcome to TALeeO LMS",
+            name: name,
+            intro: "Your account has been successfully created.",
+            phone: phone || "N/A",
+            password: defaultPassword,
+            email: email,
+            message: `Login URL: http://${currentHost}<br>Email: ${email}<br>Default password: ${defaultPassword}<br>Assigned batch: ${batchId || 'Not assigned'}`,
+            time: new Date().toLocaleString()
+          }
+        };
 
-      showToast(`✅ Invitation & Credentials sent to ${email}`, '📧');
+        const emailResponse = await fetch(`${BACKEND_EMAIL_URL}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailParams)
+        });
+
+        const rawBody = await emailResponse.text();
+        const looksOk = /ok/i.test(rawBody || '');
+        const isSuccess = emailResponse.status === 200 || looksOk;
+
+        return {
+          ok: isSuccess,
+          status: emailResponse.status,
+          body: rawBody
+        };
+      }
+
+      let emailResult = await sendInviteEmailWithTemplate(emailParamsDetails[0]);
+
+      if (!emailResult.ok && emailParamsDetails[1]) {
+        console.warn('Primary email template failed. Retrying with fallback template.', emailResult);
+        emailResult = await sendInviteEmailWithTemplate(emailParamsDetails[1]);
+      }
+
+      if (emailResult.ok) {
+        showToast(`✅ Invitation & Credentials sent to ${email}`, '📧');
+      } else {
+        console.warn('Invitation email failed for both templates.', emailResult);
+        showToast(`⚠️ Student created, but email was not sent to ${email}`, '⚠️');
+      }
     } catch (error) {
       console.warn("Server error, falling back to LocalStorage.", error);
       handleStudentLocalSave(studentPayload, batchId);

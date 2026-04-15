@@ -7,16 +7,22 @@ const USE_SERVER = true; // Set to true to use backend, false for local storage
 const FRONTEND_HOST = (typeof window !== 'undefined' && window.location && window.location.hostname)
   ? window.location.hostname
   : '';
+  const pointBackend = 'https://taleeo-backend.holistichealervedika.com';
+
 const IS_LOCAL_FRONTEND = FRONTEND_HOST === 'localhost' || FRONTEND_HOST === '127.0.0.1';
 const IS_PROD_FRONTEND =
   FRONTEND_HOST === 'taleeo-learning.holistichealervedika.com' ||
   FRONTEND_HOST.endsWith('.taleeo-learning.holistichealervedika.com') ||
+  FRONTEND_HOST.endsWith('.holistichealervedika.com') ||
+  FRONTEND_HOST.endsWith('lms.taleeolearning.in') ||
+  FRONTEND_HOST.endsWith('.taleeolearning.in') ||
   FRONTEND_HOST === 'www.taleeo-learning.holistichealervedika.com';
+const BACKEND_EMAIL_URL = 'https://api.emailjs.com/api/v1.0/email/send';
 const BACKEND_BASE_URL = IS_PROD_FRONTEND
-  ? 'https://taleeo-backend.holistichealervedika.com'
+  ? pointBackend
   : (IS_LOCAL_FRONTEND
     ? `http://${FRONTEND_HOST === '127.0.0.1' ? '127.0.0.1' : 'localhost'}:3000`
-    : 'https://taleeo-backend.holistichealervedika.com');
+    : pointBackend); //default to prod
 const BACKEND_URL = `${BACKEND_BASE_URL}/api/v1/taleeo_lms`;
 
 /* ═══════════════════════════════════════════════════════http://taleeo-backend.holistichealervedika.com/
