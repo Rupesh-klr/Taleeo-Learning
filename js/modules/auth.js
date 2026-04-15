@@ -128,7 +128,7 @@ async function doLogin() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message);
 
-      if (result.requiresOtp) {
+      if (false && result.requiresOtp) {
         _loginPending = result.user;
         document.getElementById('step-login').style.display = 'none';
         document.getElementById('step-otp').style.display = 'block';
