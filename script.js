@@ -1,12 +1,15 @@
 /* Bootstrap loader for section-based scripts. */
 (function bootstrapLmsApp() {
+  // Dynamic token: changes on every load to always fetch latest module files from server.
+  var APP_BUILD_TS = String(Date.now());
+
   var moduleScripts = [
     'js/modules/utils.js',
     'js/modules/nav.js',
     'js/modules/admin.js',
     'js/modules/student.js',
     'js/modules/auth.js'
-  ];
+  ].map(function (src) { return src + '?ts=' + APP_BUILD_TS; });
 
   // Surface precise script/line details for module parse/runtime failures.
   window.addEventListener('error', function (event) {
