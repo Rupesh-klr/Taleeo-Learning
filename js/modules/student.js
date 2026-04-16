@@ -11,6 +11,8 @@ var MODULES = [
 ];
 
 var STUDENT_DYNAMIC_MODULES = [];
+var STUDENT_BATCH_MODULE_VISIBILITY_KEY = 'student_batch_module_visibility';
+var STUDENT_CURRENT_PAGE = 'student-dashboard';
 
 function normalizeStudentModule(module, index) {
   return {
@@ -35,6 +37,95 @@ function getEffectiveStudentModules() {
 function getStudentBatch() {
   var batches = ls('batches') || [];
   return batches.find(function (b) { return b.students.includes(_currentUser.id); }) || null;
+}
+
+function getStudentBatchModuleVisibility() {
+  return ls(STUDENT_BATCH_MODULE_VISIBILITY_KEY) || {};
+}
+
+function setStudentBatchModuleVisibility(state) {
+  ls(STUDENT_BATCH_MODULE_VISIBILITY_KEY, state);
+}
+
+function isBatchModulesVisible(batchId) {
+  var state = getStudentBatchModuleVisibility();
+  return !!state[String(batchId)];
+}
+
+function toggleStudentBatchModules(batchId) {
+  var state = getStudentBatchModuleVisibility();
+  var key = String(batchId);
+  state[key] = !state[key];
+  setStudentBatchModuleVisibility(state);
+
+  if (STUDENT_CURRENT_PAGE === 'student-course') {
+    renderStudentCourse();
+  } else {
+    renderStudentDashboard();
+  }
+}
+
+function normalizeStudentBatch(batch, index) {
+  var zoomConfig = batch && batch.zoomConfig ? batch.zoomConfig : {};
+  var batchId = batch && (batch.id || batch.batchId) ? String(batch.id || batch.batchId) : `batch-${index + 1}`;
+
+  return {
+    id: batchId,
+    title: batch && (batch.title || batch.name) ? (batch.title || batch.name) : `Batch ${index + 1}`,
+    timing: batch && batch.timing ? batch.timing : '',
+    days: batch && batch.days ? batch.days : (batch && batch.type === 'weekend' ? 'Sat-Sun' : 'Mon-Fri'),
+    type: batch && batch.type ? batch.type : '',
+    status: batch && batch.status ? batch.status : (batch && batch.active === false ? 'Inactive' : 'Active'),
+    start: batch && (batch.start || batch.startDate) ? (batch.start || batch.startDate) : '',
+    end: batch && (batch.end || batch.endDate) ? (batch.end || batch.endDate) : '',
+    meetingLink: zoomConfig.link || batch.zoomLink || '',
+    meetingId: zoomConfig.meetingId || batch.zoomId || 'N/A',
+    passcode: zoomConfig.passcode || batch.zoomPass || 'N/A',
+    students: Array.isArray(batch && batch.students) ? batch.students.length : (batch && batch.studentCount ? batch.studentCount : 0),
+    modules: Array.isArray(batch && batch.modules) ? batch.modules : [],
+    courseId: batch && batch.courseId ? batch.courseId : ''
+  };
+}
+
+function getModulesForBatch(batch, fallbackModules) {
+  var batchModules = Array.isArray(batch && batch.modules) && batch.modules.length > 0 ? batch.modules : [];
+  var sourceModules = batchModules.length > 0 ? batchModules : (Array.isArray(fallbackModules) && fallbackModules.length > 0 ? fallbackModules : getEffectiveStudentModules());
+  return sourceModules.map(function (module, index) {
+    return normalizeStudentModule(module, index);
+  });
+}
+
+function renderBatchModuleList(batchId, modules) {
+  var visible = isBatchModulesVisible(batchId);
+  if (!visible) return '';
+
+  return `
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <div style="font-size:.78rem;font-weight:700;color:white;">Course Content</div>
+        <span class="badge badge-b">${modules.length} Modules</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${modules.map(function (module, index) {
+          var topics = Array.isArray(module.topics) ? module.topics : [];
+          return `<div style="background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;">
+              <div>
+                <div style="font-size:.82rem;font-weight:700;color:white;margin-bottom:3px;">${String(module.order || (index + 1)).padStart(2, '0')} · ${module.title}</div>
+                ${module.description ? `<div style="font-size:.7rem;color:var(--muted);">${module.description}</div>` : ''}
+              </div>
+              <button class="btn btn-out btn-sm" onclick="navTo('student-course', null); setTimeout(function(){ renderModuleDetail('${module.id}'); }, 0);">Open</button>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);margin-bottom:8px;">${topics.length} topics</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${topics.slice(0, 4).map(function (topic) { return `<span class="badge badge-b" style="font-size:.65rem;">${topic}</span>`; }).join('')}
+              ${topics.length > 4 ? `<span class="badge badge-g" style="font-size:.65rem;">+${topics.length - 4} more</span>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
 }
 
 async function fetchStudentDashboardSummary() {
@@ -105,6 +196,7 @@ async function fetchStudentDocumentsByAssignment(context) {
 }
 
 function renderStudentPage(page) {
+  STUDENT_CURRENT_PAGE = page;
   if (page === 'student-dashboard') renderStudentDashboard();
   else if (page === 'student-course') renderStudentCourse();
   else if (page === 'student-recordings') renderStudentRecordings();
@@ -143,7 +235,7 @@ async function renderStudentDashboard() {
     ? apiModules.map(function (m, i) { return normalizeStudentModule(m, i); })
     : [];
   var dashboardModules = getEffectiveStudentModules();
-  var dashboardBatches = apiBatches.length > 0 ? apiBatches : (batch ? [{
+  var dashboardBatches = (apiBatches.length > 0 ? apiBatches : (batch ? [{
     batchId: batch.id,
     title: batch.name,
     timing: batch.timing,
@@ -156,7 +248,9 @@ async function renderStudentDashboard() {
     },
     studentCount: (batch.students || []).length,
     status: batch.active ? 'Active' : 'Inactive'
-  }] : []);
+  }] : [])).map(function (item, index) {
+    return normalizeStudentBatch(item, index);
+  });
   var dashboardRecentRecordings = apiRecentRecordings.length > 0 ? apiRecentRecordings : recs.slice(0, 2).map(function (r) {
     return {
       date: r.date,
@@ -207,15 +301,32 @@ async function renderStudentDashboard() {
       <div class="card-header"><div class="card-title">My Batches</div></div>
       <div class="grid-2">
         ${dashboardBatches.map(function (item) {
+          var modulesForBatch = getModulesForBatch(item, dashboardModules);
+          var isOpen = isBatchModulesVisible(item.id);
           return `<div class="card" style="background:var(--panel2);border-color:var(--border);">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px;">
               <div>
                 <div style="font-weight:700;color:white;margin-bottom:4px;">${item.title}</div>
                 <div style="font-size:.72rem;color:var(--muted);">${item.timing || ''}${item.days ? ' · ' + item.days : ''}</div>
               </div>
               <span class="badge ${item.status === 'Active' ? 'badge-g' : 'badge-r'}">${item.status || 'Active'}</span>
             </div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:10px;">Meeting ID: ${item.zoomConfig && item.zoomConfig.meetingId ? item.zoomConfig.meetingId : 'N/A'}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.72rem;color:var(--muted);margin-bottom:12px;">
+              <div>⏰ ${item.timing || '—'}</div>
+              <div>👥 ${item.students || 0} students</div>
+              <div>📅 ${item.start || '—'}${item.end ? ' → ' + item.end : ''}</div>
+              <div>🔑 ${item.passcode || 'N/A'}</div>
+            </div>
+            <div class="zoom-card" style="margin-bottom:12px;background:var(--bg);">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="zoom-live-dot"></span><span style="font-size:.75rem;font-weight:700;color:white;">Meeting Access</span></div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">ID: ${item.meetingId || 'N/A'}</div>
+              <a href="${item.meetingLink || '#'}" target="_blank" style="font-size:.72rem;color:var(--b2);word-break:break-all;">${item.meetingLink || 'Join link not available'}</a>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <a href="${item.meetingLink || '#'}" target="_blank" class="btn btn-v btn-sm">Join Meeting</a>
+              <button class="btn btn-out btn-sm" onclick="toggleStudentBatchModules('${item.id}')">${isOpen ? 'Hide' : 'Show'} Course Content</button>
+            </div>
+            ${renderBatchModuleList(item.id, modulesForBatch)}
           </div>`;
         }).join('')}
       </div>
@@ -469,15 +580,53 @@ function downloadMyCertificate() {
 }
 // Updated Course List (The Grid)
 function renderStudentCourse() {
+  STUDENT_CURRENT_PAGE = 'student-course';
   var activeModules = getEffectiveStudentModules();
+  var batches = ls('batches') || [];
+  var assignedBatches = batches
+    .filter(function (batch) { return batch && batch.students && batch.students.includes(_currentUser.id); })
+    .map(function (batch, index) { return normalizeStudentBatch(batch, index); });
   var mc = document.getElementById('main-content');
   mc.innerHTML = `
     <div class="topbar">
         <div class="topbar-left"><div class="topbar-title">Course Curriculum</div></div>
     </div>
     <div style="margin-bottom:24px;">
-        <div style="font-size:.85rem;color:var(--muted);">Select a module to view deep-dive syllabus and learning outcomes.</div>
+        <div style="font-size:.85rem;color:var(--muted);">Open a batch to show or hide the modules saved for that batch in local storage.</div>
     </div>
+    ${assignedBatches.length > 0 ? `
+      <div class="batch-grid anim-in" style="margin-bottom:20px;">
+        ${assignedBatches.map(function (batch, index) {
+          var batchModules = getModulesForBatch(batch, activeModules);
+          var isOpen = isBatchModulesVisible(batch.id);
+          return `<div class="card anim-in" style="background:var(--bg2);border:1px solid var(--border);animation-delay:${index * 0.06}s;">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px;">
+              <div>
+                <div style="font-size:1rem;font-weight:700;color:white;margin-bottom:4px;">${batch.title}</div>
+                <span class="badge badge-v">${batch.type || 'batch'}</span>
+              </div>
+              <span class="badge ${batch.status === 'Active' ? 'badge-g' : 'badge-r'}">${batch.status || 'Active'}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:.78rem;color:var(--muted);">
+              <div>⏰ ${batch.timing || '—'}</div>
+              <div>👥 ${batch.students || 0} students</div>
+              <div>📅 ${batch.start || '—'}${batch.end ? ' → ' + batch.end : ''}</div>
+              <div>🔑 ${batch.passcode || 'N/A'}</div>
+            </div>
+            <div class="zoom-card" style="margin-bottom:14px; background: var(--bg);">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="zoom-live-dot"></span><span style="font-size:.75rem;font-weight:700;color:white;">Meeting Access</span></div>
+              <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">ID: ${batch.meetingId || 'N/A'}</div>
+              <a href="${batch.meetingLink || '#'}" target="_blank" style="font-size:.72rem;color:var(--b2);word-break:break-all;">${batch.meetingLink || 'Join link not available'}</a>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <a href="${batch.meetingLink || '#'}" target="_blank" class="btn btn-v btn-sm">Join Meeting</a>
+              <button class="btn btn-out btn-sm" onclick="toggleStudentBatchModules('${batch.id}')">${isOpen ? 'Hide' : 'Show'} Course Content</button>
+            </div>
+            ${renderBatchModuleList(batch.id, batchModules)}
+          </div>`;
+        }).join('')}
+      </div>
+    ` : ''}
     <div class="grid-3">
       ${activeModules.map(function (m, i) {
         return `
