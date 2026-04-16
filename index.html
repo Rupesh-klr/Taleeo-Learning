@@ -140,19 +140,19 @@
       <div class="modal-title">Upload Document / Notes</div>
       <div class="modal-sub">Documents will be visible to all students in the selected batch.</div>
       <div class="form-group"><label class="form-label">Document Title</label><input class="form-input" id="doc-title" placeholder="e.g. BRD Template – Week 1"></div>
-      <div class="form-group"><label class="form-label">Module</label>
-        <select class="form-input" id="doc-module">
-          <option value="Module 01">Module 01 – Foundations of BA</option>
-          <option value="Module 02">Module 02 – Requirements Gathering</option>
-          <option value="Module 03">Module 03 – Agile, Scrum & Methodologies</option>
-          <option value="Module 04">Module 04 – Process Modelling</option>
-          <option value="Module 05">Module 05 – UAT & Testing</option>
-          <option value="Module 06">Module 06 – Career & Interview Prep</option>
+      <div class="form-group"><label class="form-label">Course <span style="color:var(--r1)">*</span></label>
+        <select class="form-input" id="doc-course" onchange="onDocCourseChange(this.value)">
+          <option value="">Select course</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Assign to Batch</label>
+      <div class="form-group"><label class="form-label">Assign to Batch <span style="color:var(--r1)">*</span></label>
         <select class="form-input" id="doc-batch">
-          <option value="all">All Batches</option>
+          <option value="">Select batch</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Module (Optional)</label>
+        <select class="form-input" id="doc-module">
+          <option value="">Select module (optional)</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">Document URL / Drive Link</label><input class="form-input" id="doc-url" placeholder="https://drive.google.com/..."></div>
@@ -178,9 +178,19 @@
       <div class="form-group"><label class="form-label">Session Date</label><input type="date" class="form-input" id="rec-date"></div>
       <div class="form-group"><label class="form-label">Duration</label><input class="form-input" id="rec-duration" placeholder="e.g. 2h 15m"></div>
       <div class="form-group"><label class="form-label">Recording URL (Zoom/Drive)</label><input class="form-input" id="rec-url" placeholder="https://zoom.us/rec/..."></div>
-      <div class="form-group"><label class="form-label">Batch</label>
+      <div class="form-group"><label class="form-label">Course <span style="color:var(--r1)">*</span></label>
+        <select class="form-input" id="rec-course" onchange="onRecCourseChange(this.value)">
+          <option value="">Select course</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Batch <span style="color:var(--r1)">*</span></label>
         <select class="form-input" id="rec-batch">
-          <option value="all">All Batches</option>
+          <option value="">Select batch</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Module (Optional)</label>
+        <select class="form-input" id="rec-module">
+          <option value="">Select module (optional)</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">Topics Covered</label><input class="form-input" id="rec-topics" placeholder="BRD, FRD, RTM, Stakeholder interviews"></div>

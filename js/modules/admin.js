@@ -354,11 +354,33 @@ function filterEnrollmentList(term) {
 }
 
 async function openEnrollmentModal(batchId) {
-    // Fetch students from server or local fallback
-    const students = await apiGet('/admin/students?limit=500') || (ls('users') || []).filter(u => u.role === 'student');
-    const currentBatch = _activeCourseContext?.batches?.find(b => b.id === batchId);
-    const enrolledIds = currentBatch?.students || [];
-  const batchName = currentBatch?.name || 'Selected Batch';
+  // Always fetch latest enrollment state from dropdown APIs.
+  const [batchResp, studentsResp] = await Promise.all([
+    apiGet(`/admin/dropdowns?item=batches&id=${encodeURIComponent(batchId)}`, true),
+    apiGet('/admin/dropdowns?item=students&limit=500', true)
+  ]);
+
+  const batchItem = (batchResp && Array.isArray(batchResp.items) && batchResp.items.length > 0)
+    ? batchResp.items[0]
+    : (_activeCourseContext?.batches?.find(b => b.id === batchId) || null);
+
+  const enrolledIds = new Set(
+    Array.isArray(batchItem?.students)
+      ? batchItem.students.map(String)
+      : Array.isArray(batchItem?.studentDetails)
+        ? batchItem.studentDetails.map(s => String(s.id || s._id || '')).filter(Boolean)
+        : []
+  );
+
+  const allStudents = (studentsResp && Array.isArray(studentsResp.items))
+    ? studentsResp.items
+    : (ls('users') || []).filter(u => u.role === 'student' && u.isDeleted !== true);
+
+  // If students endpoint is not available, at least show enrolled student details from batch response.
+  const enrolledOnlyFallback = Array.isArray(batchItem?.studentDetails) ? batchItem.studentDetails : [];
+  const students = allStudents.length > 0 ? allStudents : enrolledOnlyFallback;
+
+  const batchName = batchItem?.name || 'Selected Batch';
 
   const existingModal = document.getElementById('modal-enroll');
   if (existingModal) existingModal.remove();
@@ -368,7 +390,7 @@ async function openEnrollmentModal(batchId) {
             <div class="modal" style="max-width: 600px;">
                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
                 <div class="modal-title">Batch Enrollment Management</div>
-                <div class="modal-sub">Managing: ${currentBatch?.name || 'Batch'}</div>
+                <div class="modal-sub">Managing: ${batchName}</div>
 
         <div class="card" style="margin-bottom:14px;padding:14px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
@@ -398,7 +420,8 @@ async function openEnrollmentModal(batchId) {
 
                 <div class="enrollment-scroll-container" id="enrollment-list">
                     ${students.map(s => {
-                        const isEnrolled = enrolledIds.includes(s.id);
+                    const sid = String(s.id || s._id || '');
+                    const isEnrolled = enrolledIds.has(sid);
                         return `
                         <div class="enroll-item anim-in">
                             <div class="enroll-info">
@@ -409,7 +432,7 @@ async function openEnrollmentModal(batchId) {
                                 </div>
                             </div>
                             <button class="btn ${isEnrolled ? 'btn-danger' : 'btn-v'} btn-sm" 
-                                onclick="${isEnrolled ? `removeStudentFromBatch('${s.id}', '${batchId}')` : `enrollExistingStudent('${s.id}', '${batchId}')`}">
+                              onclick="${isEnrolled ? `removeStudentFromBatch('${sid}', '${batchId}')` : `enrollExistingStudent('${sid}', '${batchId}')`}">
                                 ${isEnrolled ? 'Remove' : 'Add →'}
                             </button>
                             
@@ -443,7 +466,7 @@ async function openEnrollmentModal(batchId) {
       phone: phone || '',
       firstLogin: false,
       avatar: name[0].toUpperCase(),
-      batchId: batchId || null,
+      enrolledBatches: batchId ? [batchId] : [],
       isDeleted: false
     };
 
@@ -528,11 +551,12 @@ async function requestDeleteBatch(batchId) {
             method: 'DELETE',
             credentials: 'include'
         });
-
         if (response.ok) {
+          console.log('Batch deactivated successfully');
             showToast('Batch deactivated successfully', '🗑️');
             renderCourseDeepDive(_activeCourseContext.id); // Refresh view
         } else {
+          console.log('Batch deactivated faileed');
             throw new Error("Failed to delete batch");
         }
     } catch (err) {
@@ -550,7 +574,7 @@ async function enrollExistingStudent(studentId, batchId) {
 
         if (response.ok) {
             showToast('Student added to batch!', '✅');
-            renderCourseDeepDive(_activeCourseContext.id);
+      openEnrollmentModal(batchId);
         } else {
             throw new Error("Enrollment failed");
         }
@@ -558,70 +582,6 @@ async function enrollExistingStudent(studentId, batchId) {
         showToast('Error: ' + e.message, '❌');
     }
 }
-// async function renderCourseDeepDive(courseId) {
-//     showLoading();
-//     const mc = document.getElementById('main-content');
-    
-//     const response = await apiGet(`/admin/courses/search?q=${courseId}`); 
-//     const course = response.courses.find(c => c.id === courseId);
-//     if (!course) return renderAdminCurriculum();
-
-//     _activeCourseContext = course; 
-//     saveNavState('course-detail', courseId);
-
-//     mc.innerHTML = `
-//         <div class="topbar">
-//             <div class="topbar-left">
-//                 <button class="btn btn-out btn-sm" onclick="renderAdminCurriculum()">← Back</button>
-//                 <div style="margin-left:15px;"><div class="topbar-title">Editing: ${course.name}</div></div>
-//             </div>
-//             <div class="topbar-right">
-//                 <button class="btn btn-v btn-sm" onclick="openModuleModal()">+ Add Module</button>
-//                 <button class="btn btn-success btn-sm" onclick="openBatchModal(null, '${course.id}')">+ Add Batch</button>
-//             </div>
-//         </div>
-
-//         <div class="editor-layout anim-in">
-//             <div class="card">
-//                 <div class="card-header">
-//                     <div class="card-title">📚 Course Syllabus</div>
-//                 </div>
-//                 <div class="syllabus-container">
-//                     ${course.modules?.map((m, i) => `
-//                         <div class="syllabus-item expandable" id="mod-card-${m.id}">
-//                             <div class="syllabus-header" onclick="toggleModuleExpand('${m.id}')" style="cursor:pointer;">
-//                                 <span class="syllabus-index">Module 0${m.order || i+1}</span>
-//                                 <div style="display:flex; gap:8px;">
-//                                     <button class="btn btn-out btn-icon" onclick="event.stopPropagation(); openModuleModal('${m.id}')">✏️</button>
-//                                     <button class="btn btn-danger btn-icon" onclick="event.stopPropagation(); requestDeleteModule('${m.id}', '${course.id}')">🗑️</button>
-//                                 </div>
-//                             </div>
-//                             <div style="font-weight:600; color:white; font-size:1rem; margin-top:5px;">${m.title}</div>
-                            
-//                             <div class="mod-details" id="details-${m.id}" style="display:none; margin-top:15px; border-top:1px solid var(--border); padding-top:15px;">
-//                                 <div class="card-sub" style="margin-bottom:10px;">${m.description || 'No description provided.'}</div>
-                                
-//                                 <div style="display:flex; flex-direction:column; gap:8px;">
-//                                     <div style="font-size:0.75rem; color:var(--v2); font-weight:700; text-transform:uppercase;">Key Topics</div>
-//                                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
-//                                         ${m.topics?.map(t => `<span class="topic-tag">${t}</span>`).join('') || '<span style="color:var(--dim);">No topics.</span>'}
-//                                     </div>
-//                                 </div>
-
-//                                 <div style="margin-top:15px;">
-//                                     <div style="font-size:0.75rem; color:var(--gr); font-weight:700; text-transform:uppercase;">Learning Outcomes / Bonus</div>
-//                                     <ul class="bonus-list">
-//                                         ${m.bonus?.length > 0 ? m.bonus.map(b => `<li>${b}</li>`).join('') : '<li style="list-style:none; color:var(--dim);">No outcomes listed.</li>'}
-//                                     </ul>
-//                                 </div>
-//                             </div>
-//                         </div>
-//                     `).join('')}
-//                 </div>
-//             </div>
-//             </div>
-//     `;
-// }
 async function saveBatchAction(batchId, courseId) {
     const payload = {
         name: document.getElementById('in-b-name').value,
@@ -632,24 +592,27 @@ async function saveBatchAction(batchId, courseId) {
         courseId: courseId,
         zoomDetails: {
             link: document.getElementById('in-b-zoom').value,
-            id: "Generated", 
-            pass: "admin123"
+            id: document.getElementById('in-b-zoom-id')?.value || '',
+            pass: document.getElementById('in-b-zoom-pass')?.value || ''
         },
         active: true,
         isDeleted: false
     };
+     let res=null;
 
     const method = (batchId && batchId !== 'null') ? 'PUT' : 'POST';
     const url = method === 'PUT' ? `/admin/batches/${batchId}` : `/admin/batches`;
 
     try {
-        const res = await apiWrite(url, method, payload); // Uses your common backend caller
+         res = await apiWrite(url, method, payload); // Uses your common backend caller
         showToast('Batch Saved Successfully', '✅');
         document.getElementById('modal-manage-batch').remove();
+
         renderAdminBatches(); // Refresh UI
     } catch (e) {
         showToast('Error saving batch: ' + e.message, '❌');
     }
+    return res;
 }
 async function requestDeleteModule(moduleId, courseId) {
     if (!confirm("Are you sure you want to remove this module from the curriculum?")) return;
@@ -1079,8 +1042,36 @@ function renderBatchComponent(b, allStudents) {
     </div>`;
 }
 
-// 🌟 FIX: Updated Modal to find batch data in ALL possible locations
-function openBatchModal(batchId = null, courseId = null) {
+// 🌟 Load courses from dropdown endpoint
+async function loadCourseDropdown() {
+    try {
+        // apiGet already returns parsed JSON data, not a Response object
+        const data = await apiGet('/admin/dropdowns?item=courses');
+        
+        if (data && data.items && Array.isArray(data.items)) {
+            // Cache successfully loaded courses to localStorage
+            ls('cached_courses', data.items);
+            return data.items;
+        } else {
+            throw new Error('Invalid response format from courses endpoint');
+        }
+    } catch (err) {
+        console.error('Failed to load courses from API:', err);
+        
+        // Fallback: Try to use cached courses from localStorage
+        const cachedCourses = ls('cached_courses');
+        if (cachedCourses && Array.isArray(cachedCourses) && cachedCourses.length > 0) {
+            console.warn('Using cached courses from localStorage');
+            return cachedCourses;
+        }
+        
+        console.error('No cached courses available');
+        return [];
+    }
+}
+
+// 🌟 UPDATED: Batch Modal with mandatory course selection
+async function openBatchModal(batchId = null, courseId = null) {
     const isEdit = !!batchId;
     let b = {};
 
@@ -1090,12 +1081,32 @@ function openBatchModal(batchId = null, courseId = null) {
         b = source.find(x => x.id === batchId) || {};
     }
 
+    // If editing, use existing courseId; otherwise fetch courses and force selection
+    let courseSelectionHtml = '';
+    let formattedCourseId = courseId || b.courseId;
+
+    if (!isEdit && !formattedCourseId) {
+        // Show loading state initially
+        const courses = await loadCourseDropdown();
+        courseSelectionHtml = `
+            <div class="form-group" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                <label class="form-label" style="color: var(--v2); font-weight: 700;">Select Course *</label>
+                <select class="form-input" id="in-b-course-select" onchange="updateBatchCourseId(this.value)" style="border: 2px solid var(--v2);">
+                    <option value="">-- Choose a Course --</option>
+                    ${courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                </select>
+                <small style="color: var(--muted); font-size: 0.75rem;">Cannot create batch without selecting a course</small>
+            </div>`;
+    }
+
     const modalHtml = `
         <div class="modal-overlay open" id="modal-manage-batch">
             <div class="modal">
                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
                 <div class="modal-title">${isEdit ? 'Update' : 'Create'} Batch</div>
-                <div class="modal-sub">Course ID: ${courseId || b.courseId || 'Select in next step'}</div>
+                <div class="modal-sub">Course ID: <span id="modal-course-id">${formattedCourseId || '⚠️ Required'}</span></div>
+                
+                ${courseSelectionHtml}
                 
                 <div class="form-group"><label class="form-label">Name</label>
                     <input class="form-input" id="in-b-name" value="${b.name || ''}">
@@ -1122,255 +1133,153 @@ function openBatchModal(batchId = null, courseId = null) {
                 <div class="form-group"><label class="form-label">Zoom Link</label>
                     <input class="form-input" id="in-b-zoom" value="${b.zoomDetails?.link || b.zoomLink || ''}">
                 </div>
+                <div class="grid-2">
+                  <div class="form-group"><label class="form-label">Zoom Meeting ID (Optional)</label>
+                    <input class="form-input" id="in-b-zoom-id" value="${b.zoomDetails?.id || b.zoomId || ''}">
+                  </div>
+                  <div class="form-group"><label class="form-label">Zoom Passcode (Optional)</label>
+                    <input class="form-input" id="in-b-zoom-pass" value="${b.zoomDetails?.pass || b.zoomPass || ''}">
+                  </div>
+                </div>
                 
-                <button class="btn btn-v btn-full" onclick="saveBatchAction('${batchId}', '${courseId || b.courseId}')">
+                <button class="btn btn-v btn-full" id="save-batch-btn" data-batch-id="${batchId}" data-course-id="${formattedCourseId || ''}" onclick="handleSaveBatch()">
                     ${isEdit ? 'Update Batch Schedule →' : 'Create Batch →'}
                 </button>
             </div>
         </div>`;
     document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-// async function renderAdminBatches() {
-//   var mc = document.getElementById('main-content');
-//   mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading batches...</div>';
-
-//   var batches = [];
-//   var users = [];
-
-//   if (USE_SERVER) {
-//     try {
-//       const response = await fetch(`${BACKEND_URL}/admin/batches`, {
-//             credentials: 'include' // <--- ADD THIS LINE
-//         });
-//       if (!response.ok) throw new Error('API failed to load batches');
-//       batches = await response.json();
-
-//       try {
-//         const userRes = await fetch(`${BACKEND_URL}/admin/students?limit=100`, {
-//             credentials: 'include' // <--- ADD THIS LINE
-//         });
-//         if (userRes.ok) users = await userRes.json();
-//         else users = ls('users') || [];
-//       } catch (userErr) {
-//         users = ls('users') || [];
-//       }
-//     } catch (error) {
-//       console.warn("Backend unavailable, falling back to LocalStorage.", error);
-//       batches = ls('batches') || [];
-//       users = ls('users') || [];
-//     }
-//   } else {
-//     batches = ls('batches') || [];
-//     users = ls('users') || [];
-//   }
-
-//   mc.innerHTML = `
-//     <div class="topbar">
-//       <div class="topbar-left"><div class="topbar-title">Batch Management</div></div>
-//       <div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ Create Batch</button></div>
-//     </div>
-//     <div class="grid-2">
-//       ${batches.map(function (b) {
-//         var studentIds = b.students || [];
-//         var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
-//         var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
-//         var enrolled = users.filter(function (u) { return studentIds.includes(u.id); });
-
-//         return `<div class="card anim-in">
-//           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
-//             <div><div style="font-size:1rem;font-weight:700;color:white;margin-bottom:4px;">${b.name}</div>
-//             <span class="badge ${b.type === 'weekend' ? 'badge-v' : 'badge-b'}">${b.type === 'weekend' ? 'Weekend' : 'Weekday'}</span></div>
-//             <span class="badge ${daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
-//           </div>
-//           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:.78rem;color:var(--muted);">
-//             <div>⏰ ${b.timing}</div>
-//             <div>👥 ${enrolled.length} students</div>
-//             <div>📅 ${b.start} → ${b.end}</div>
-//             <div>🔑 ${b.zoomPass}</div>
-//           </div>
-//           <div class="zoom-card" style="margin-bottom:14px;">
-//             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="zoom-live-dot"></span><span style="font-size:.75rem;font-weight:700;color:white;">Zoom Meeting</span></div>
-//             <div style="font-size:.72rem;color:var(--muted);margin-bottom:6px;">ID: ${b.zoomId} · Pass: ${b.zoomPass}</div>
-//             <a href="${b.zoomLink}" target="_blank" style="font-size:.72rem;color:var(--b2);word-break:break-all;">${b.zoomLink}</a>
-//           </div>
-//           <div class="progress-wrap" style="margin-bottom:10px;"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
-//           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-//             <button class="btn btn-success btn-sm" onclick="openInviteForBatch('${b.id}')">+ Invite Student</button>
-//             <button class="btn btn-danger btn-sm" onclick="toggleBatch('${b.id}')">${b.active ? 'Deactivate' : 'Activate'}</button>
-//           </div>
-//           ${enrolled.length > 0 ? `<div style="margin-top:12px;"><div style="font-size:.68rem;font-weight:700;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;">Enrolled Students</div>${enrolled.map(function (s) { return '<span class="badge badge-v" style="margin:2px;">' + s.name + '</span>'; }).join('')}</div>` : ''}
-//         </div>`;
-//       }).join('')}
-//     </div>
-//   `;
-// }
-
-// async function renderAdminBatches() {
-//     showLoading();
-//     const mc = document.getElementById('main-content');
-
-//     // Fetch data from server with local fallbacks
-//     const batches = await apiGet('/admin/batches') || ls('batches') || [];
-//     const students = await apiGet('/admin/students?limit=500') || (ls('users') || []).filter(u => u.role === 'student');
-
-//     mc.innerHTML = `
-//         <div class="topbar">
-//             <div class="topbar-left"><div class="topbar-title">Batch Management</div></div>
-//             <div class="topbar-right">
-//                 <button class="btn btn-v btn-sm" onclick="openBatchModal()">+ Create New Batch</button>
-//             </div>
-//         </div>
-
-//         <div class="batch-grid anim-in">
-//             ${batches.map(b => {
-//                 // Calculate time metrics
-//                 const daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
-//                 const progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
-                
-//                 // Cross-reference enrolled students
-//                 const enrolled = students.filter(s => b.students?.includes(s.id));
-
-//                 return `
-//                 <div class="card anim-in" style="background: var(--bg2);">
-//                     <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px;">
-//                         <div>
-//                             <div style="font-size:1.1rem; font-weight:700; color:white; margin-bottom:4px;">${b.name}</div>
-//                             <span class="badge ${b.type === 'weekend' ? 'badge-v' : 'badge-b'}">${b.type}</span>
-//                         </div>
-//                         <span class="badge ${daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
-//                     </div>
-
-//                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; font-size:.78rem; color:var(--muted);">
-//                         <div>⏰ ${b.timing || 'Not Set'}</div>
-//                         <div>👥 ${enrolled.length} Enrolled</div>
-//                         <div>📅 ${b.start} → ${b.end}</div>
-//                         <div>🔑 Pass: ${b.zoomDetails?.pass || b.zoomPass || 'admin123'}</div>
-//                     </div>
-
-//                     <div class="zoom-card" style="margin-bottom:14px; background: var(--bg);">
-//                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-//                             <span class="zoom-live-dot"></span>
-//                             <span style="font-size:.75rem; font-weight:700; color:white;">Zoom Session Info</span>
-//                         </div>
-//                         <div style="font-size:.72rem; color:var(--muted); margin-bottom:6px;">
-//                             ID: ${b.zoomDetails?.id || b.zoomId || 'Generated'}
-//                         </div>
-//                         <a href="${b.zoomDetails?.link || b.zoomLink || '#'}" target="_blank" style="font-size:.72rem; color:var(--b2); word-break:break-all;">
-//                             ${b.zoomDetails?.link || b.zoomLink || 'No link provided'}
-//                         </a>
-//                     </div>
-
-//                     <div class="progress-wrap">
-//                         <div class="progress-fill" style="width:${progress}%; background:linear-gradient(90deg, var(--v1), var(--b1));"></div>
-//                     </div>
-
-//                     <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
-//                         <button class="btn btn-v btn-sm" onclick="openEnrollmentModal('${b.id}')">👥 Manage Enrollment</button>
-//                         <button class="btn btn-out btn-sm" onclick="openBatchModal('${b.id}', '${b.courseId}')">✏️ Edit</button>
-//                         <button class="btn btn-danger btn-sm" onclick="requestDeleteBatch('${b.id}')">🗑️ Deactivate</button>
-//                     </div>
-
-//                     ${enrolled.length > 0 ? `
-//                         <div style="border-top:1px solid var(--border); padding-top:12px;">
-//                             <div style="font-size:.65rem; font-weight:700; color:var(--dim); text-transform:uppercase; margin-bottom:6px;">Enrolled Students</div>
-//                             ${enrolled.map(s => `<span class="student-tag">${s.name}</span>`).join('')}
-//                         </div>
-//                     ` : ''}
-//                 </div>`;
-//             }).join('') || '<div class="card-sub">No batches found. Create your first batch to begin.</div>'}
-//         </div>
-//     `;
-// }
-
-// function openBatchModal(batchId = null, courseId = null) {
-//     const isEdit = !!batchId;
-//     // If editing, find batch in local or fetched data
-//     const b = isEdit ? (ls('batches') || []).find(x => x.id === batchId) : {};
-
-//     const modalHtml = `
-//         <div class="modal-overlay open" id="modal-manage-batch">
-//             <div class="modal">
-//                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
-//                 <div class="modal-title">${isEdit ? 'Update' : 'Create'} Batch</div>
-//                 <div class="modal-sub">Linked Course ID: ${courseId || b.courseId || 'N/A'}</div>
-                
-//                 <div class="form-group"><label class="form-label">Batch Name</label>
-//                     <input class="form-input" id="in-b-name" value="${b.name || ''}" placeholder="e.g. Node.js Weekend Mastery">
-//                 </div>
-//                 <div class="grid-2">
-//                     <div class="form-group"><label class="form-label">Type</label>
-//                         <select class="form-input" id="in-b-type">
-//                             <option value="weekend" ${b.type === 'weekend' ? 'selected' : ''}>Weekend</option>
-//                             <option value="weekday" ${b.type === 'weekday' ? 'selected' : ''}>Weekday</option>
-//                         </select>
-//                     </div>
-//                     <div class="form-group"><label class="form-label">Timing</label>
-//                         <input class="form-input" id="in-b-timing" value="${b.timing || ''}" placeholder="10:00 AM - 1:00 PM">
-//                     </div>
-//                 </div>
-//                 <div class="grid-2">
-//                     <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-input" id="in-b-start" value="${b.start || ''}"></div>
-//                     <div class="form-group"><label class="form-label">End Date</label><input type="date" class="form-input" id="in-b-end" value="${b.end || ''}"></div>
-//                 </div>
-//                 <div class="form-group"><label class="form-label">Zoom Link</label><input class="form-input" id="in-b-zoom" value="${b.zoomDetails?.link || ''}"></div>
-                
-//                 <button class="btn btn-v btn-full" onclick="saveBatchAction('${batchId}', '${courseId || b.courseId}')">
-//                     ${isEdit ? 'Update Batch →' : 'Create Batch →'}
-//                 </button>
-//             </div>
-//         </div>`;
-//     document.body.insertAdjacentHTML('beforeend', modalHtml);
-// }
-// script.js
-// function openBatchModal(batchId = null, courseId = null) {
-//     const isEdit = !!batchId;
     
-//     // 1. If editing, find the batch inside the active course context
-//     let b = {};
-//     if (isEdit && _activeCourseContext) {
-//         b = _activeCourseContext.batches.find(x => x.id === batchId) || {};
-//     }
+    // Initialize button state AFTER modal is inserted into DOM
+    setTimeout(() => {
+        const saveBtn = document.getElementById('save-batch-btn');
+        if (saveBtn) {
+            if (!isEdit && !formattedCourseId) {
+                // Disable button for new batch without courseId
+                saveBtn.disabled = true;
+                saveBtn.style.opacity = '0.5';
+                saveBtn.style.cursor = 'not-allowed';
+                saveBtn.style.pointerEvents = 'none';
+                console.log('✓ Button initialized as DISABLED (waiting for course selection)');
+            } else {
+                // Enable button for editing or when courseId is provided
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
+                saveBtn.style.pointerEvents = 'auto';
+                console.log('✓ Button initialized as ENABLED');
+            }
+        }
+    }, 0);
+}
 
-//     const modalHtml = `
-//         <div class="modal-overlay open" id="modal-manage-batch">
-//             <div class="modal">
-//                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
-//                 <div class="modal-title">${isEdit ? 'Update' : 'Create'} Batch</div>
-//                 <div class="modal-sub">Linked Course ID: ${courseId || b.courseId}</div>
-                
-//                 <div class="form-group"><label class="form-label">Batch Name</label>
-//                     <input class="form-input" id="in-b-name" value="${b.name || ''}">
-//                 </div>
-//                 <div class="grid-2">
-//                     <div class="form-group"><label class="form-label">Type</label>
-//                         <select class="form-input" id="in-b-type">
-//                             <option value="weekend" ${b.type === 'weekend' ? 'selected' : ''}>Weekend</option>
-//                             <option value="weekday" ${b.type === 'weekday' ? 'selected' : ''}>Weekday</option>
-//                         </select>
-//                     </div>
-//                     <div class="form-group"><label class="form-label">Timing</label>
-//                         <input class="form-input" id="in-b-timing" value="${b.timing || ''}">
-//                     </div>
-//                 </div>
-//                 <div class="grid-2">
-//                     <div class="form-group"><label class="form-label">Start Date</label>
-//                         <input type="date" class="form-input" id="in-b-start" value="${b.start || ''}">
-//                     </div>
-//                     <div class="form-group"><label class="form-label">End Date</label>
-//                         <input type="date" class="form-input" id="in-b-end" value="${b.end || ''}">
-//                     </div>
-//                 </div>
-//                 <div class="form-group"><label class="form-label">Zoom Link</label>
-//                     <input class="form-input" id="in-b-zoom" value="${b.zoomDetails?.link || ''}">
-//                 </div>
-                
-//                 <button class="btn btn-v btn-full" onclick="saveBatchAction('${batchId}', '${courseId || b.courseId}')">
-//                     ${isEdit ? 'Update Batch →' : 'Create Batch →'}
-//                 </button>
-//             </div>
-//         </div>`;
-//     document.body.insertAdjacentHTML('beforeend', modalHtml);
-// }
+// 🌟 Global storage for selected batch courseId
+let _selectedBatchCourseId = null;
+
+// 🌟 Handler for save batch button - gets courseId from multiple sources
+async function handleSaveBatch() {
+    const saveBtn = document.getElementById('save-batch-btn');
+    if (!saveBtn) {
+        console.error('❌ Save button not found');
+        return;
+    }
+    
+    // Get courseId from: 1) global, 2) select element, 3) data attribute
+    let courseId = _selectedBatchCourseId;
+    console.log('🔄 handleSaveBatch - Global courseId:', courseId);
+    
+    if (!courseId) {
+        const courseSelect = document.getElementById('in-b-course-select');
+        if (courseSelect) {
+            courseId = courseSelect.value;
+            console.log('🔄 handleSaveBatch - From select dropdown:', courseId);
+        }
+    }
+    
+    if (!courseId) {
+        courseId = saveBtn.getAttribute('data-course-id') || '';
+        console.log('🔄 handleSaveBatch - From data attribute:', courseId);
+    }
+    
+    const batchId = saveBtn.getAttribute('data-batch-id') || '';
+    
+    if (!courseId) {
+        alert('⚠️ Please select a course first');
+        console.warn('❌ No courseId - batch creation blocked');
+        return;
+    }
+    
+    console.log('✅ handleSaveBatch - Proceeding with courseId:', courseId, 'batchId:', batchId);
+    // Call the original save function
+    let res = await saveBatchAction(batchId, courseId);
+    console.log('Batch save action result:', res);
+    debugger;
+    await linkBatchToCourse(res.batch.id, courseId);
+}
+async function linkBatchToCourse(batchId, courseId) {
+    try {
+        // const response = await apiGet(`/admin/batches/${batchId}`, false);
+        const batchData = {  courseId };
+        
+        await fetch(`${BACKEND_URL}/admin/batches/${batchId}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(batchData)
+        });
+        
+        console.log('✅ Batch linked to course');
+    } catch (err) {
+        console.error('❌ Link failed:', err);
+    }
+}
+
+// 🌟 Helper: Update courseId when selection changes (with robust element finding)
+function updateBatchCourseId(courseId) {
+    console.log('🔄 updateBatchCourseId called with:', courseId);
+    
+    // Store the courseId globally for later use
+    _selectedBatchCourseId = courseId;
+    
+    // Use direct getElementById for more reliable element finding
+    const courseSpan = document.getElementById('modal-course-id');
+    const saveBtn = document.getElementById('save-batch-btn');
+    
+    // Safety check: ensure elements exist
+    if (!courseSpan || !saveBtn) {
+        console.warn('⚠️ Modal elements not ready yet', { courseSpan: !!courseSpan, saveBtn: !!saveBtn });
+        // Retry after a short delay
+        setTimeout(() => updateBatchCourseId(courseId), 100);
+        return;
+    }
+    
+    console.log('✓ Both elements found, updating UI');
+    
+    if (courseId) {
+        courseSpan.textContent = courseId;
+        courseSpan.style.color = 'var(--g1)';
+        
+        // Enable button
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        saveBtn.style.cursor = 'pointer';
+        saveBtn.style.pointerEvents = 'auto';
+        saveBtn.setAttribute('data-course-id', courseId);
+        
+        console.log('✅ Button ENABLED for courseId:', courseId);
+    } else {
+        courseSpan.textContent = '⚠️ Required';
+        courseSpan.style.color = 'var(--r1)';
+        
+        // Disable button
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+        saveBtn.style.cursor = 'not-allowed';
+        saveBtn.style.pointerEvents = 'none';
+        saveBtn.setAttribute('data-course-id', '');
+        
+        console.log('❌ Button DISABLED - no courseId selected');
+    }
+}
 async function renderAdminStudents() {
   var mc = document.getElementById('main-content');
   mc.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);">Loading students...</div>';
@@ -1471,6 +1380,11 @@ async function renderAdminDocuments() {
           <div style="font-size:2rem;margin-bottom:10px;">${icons[d.type] || '📄'}</div>
           <div style="font-size:.88rem;font-weight:700;color:white;margin-bottom:5px;">${d.title}</div>
           <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${d.module}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="badge badge-b">Course: ${d.courseId || 'N/A'}</span>
+            <span class="badge badge-g">Batch: ${d.batchId || d.batch || 'N/A'}</span>
+            <span class="badge badge-c">Module: ${d.moduleId || 'N/A'}</span>
+          </div>
           <span class="badge ${colors[d.type] || 'badge-v'}" style="margin-bottom:10px;">${d.type}</span>
           <div style="font-size:.68rem;color:var(--dim);margin-bottom:12px;">Uploaded: ${d.uploadedAt}</div>
           <div style="display:flex;gap:7px;">
@@ -1534,6 +1448,11 @@ async function renderAdminRecordings() {
               <div>
                 <div style="font-size:.9rem;font-weight:700;color:white;margin-bottom:3px;">${r.title}</div>
                 <div style="font-size:.72rem;color:var(--muted);">📅 ${r.date} · ⏱ ${r.duration} · 🏷 ${r.topics}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                  <span class="badge badge-b">Course: ${r.courseId || 'N/A'}</span>
+                  <span class="badge badge-g">Batch: ${r.batchId || r.batch || 'N/A'}</span>
+                  <span class="badge badge-c">Module: ${r.moduleId || 'N/A'}</span>
+                </div>
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
@@ -1735,19 +1654,106 @@ async function renderAdminCertificates() {
    ACTION FUNCTIONS
 ═══════════════════════════════════════════════════════ */
 function openModal(id) {
-  // populate selects in modals
+  // populate legacy batch selects in modals
   var batches = ls('batches') || [];
-  ['new-student-batch', 'doc-batch', 'rec-batch', 'bulk-batch-select'].forEach(function (sid) {
+  ['new-student-batch', 'bulk-batch-select'].forEach(function (sid) {
     var el = byId(sid);
     if (el) {
-      var opts = sid === 'doc-batch' || sid === 'rec-batch' ? '<option value="all">All Batches</option>' : '<option value="">Select batch</option>';
+      var opts = '<option value="">Select batch</option>';
       opts += batches.map(function (b) { return '<option value="' + b.id + '">' + b.name + '</option>'; }).join('');
       el.innerHTML = opts;
     }
   });
+
+  if (id === 'modal-upload-doc' || id === 'modal-add-recording') {
+    populateCourseBatchModuleSelectors(id).catch(function (err) {
+      console.warn('Failed to populate course/batch/module selectors', err);
+    });
+  }
+
   byId(id).classList.add('open');
 }
 function closeModal(id) { byId(id).classList.remove('open'); }
+
+async function populateCourseBatchModuleSelectors(modalId) {
+  const data = await apiGet('/admin/dropdowns?item=courses&limit=1000', true);
+  const courses = (data && Array.isArray(data.items)) ? data.items : [];
+
+  if (modalId === 'modal-upload-doc') {
+    const courseEl = byId('doc-course');
+    if (courseEl) {
+      let opts = '<option value="">Select course</option>';
+      opts += courses.map(function (c) { return '<option value="' + c.id + '">' + (c.name || c.id) + '</option>'; }).join('');
+      courseEl.innerHTML = opts;
+      courseEl.value = '';
+    }
+    onDocCourseChange('');
+    return;
+  }
+
+  if (modalId === 'modal-add-recording') {
+    const courseEl = byId('rec-course');
+    if (courseEl) {
+      let opts = '<option value="">Select course</option>';
+      opts += courses.map(function (c) { return '<option value="' + c.id + '">' + (c.name || c.id) + '</option>'; }).join('');
+      courseEl.innerHTML = opts;
+      courseEl.value = '';
+    }
+    onRecCourseChange('');
+  }
+}
+
+async function onDocCourseChange(courseId) {
+  const batchEl = byId('doc-batch');
+  const moduleEl = byId('doc-module');
+  if (!batchEl || !moduleEl) return;
+
+  if (!courseId) {
+    batchEl.innerHTML = '<option value="">Select batch</option>';
+    moduleEl.innerHTML = '<option value="">Select module (optional)</option>';
+    return;
+  }
+
+  const data = await apiGet('/admin/dropdowns?item=courses&id=' + encodeURIComponent(courseId), true);
+  const course = (data && Array.isArray(data.items) && data.items.length > 0) ? data.items[0] : null;
+
+  const batches = Array.isArray(course && course.batches) ? course.batches : [];
+  const modules = Array.isArray(course && course.modules) ? course.modules : [];
+
+  let batchOpts = '<option value="">Select batch</option>';
+  batchOpts += batches.map(function (b) { return '<option value="' + b.id + '">' + (b.name || b.id) + '</option>'; }).join('');
+  batchEl.innerHTML = batchOpts;
+
+  let moduleOpts = '<option value="">Select module (optional)</option>';
+  moduleOpts += modules.map(function (m) { return '<option value="' + m.id + '">' + (m.title || m.id) + '</option>'; }).join('');
+  moduleEl.innerHTML = moduleOpts;
+}
+
+async function onRecCourseChange(courseId) {
+  const batchEl = byId('rec-batch');
+  const moduleEl = byId('rec-module');
+  if (!batchEl || !moduleEl) return;
+
+  if (!courseId) {
+    batchEl.innerHTML = '<option value="">Select batch</option>';
+    moduleEl.innerHTML = '<option value="">Select module (optional)</option>';
+    return;
+  }
+
+  const data = await apiGet('/admin/dropdowns?item=courses&id=' + encodeURIComponent(courseId), true);
+  const course = (data && Array.isArray(data.items) && data.items.length > 0) ? data.items[0] : null;
+
+  const batches = Array.isArray(course && course.batches) ? course.batches : [];
+  const modules = Array.isArray(course && course.modules) ? course.modules : [];
+
+  let batchOpts = '<option value="">Select batch</option>';
+  batchOpts += batches.map(function (b) { return '<option value="' + b.id + '">' + (b.name || b.id) + '</option>'; }).join('');
+  batchEl.innerHTML = batchOpts;
+
+  let moduleOpts = '<option value="">Select module (optional)</option>';
+  moduleOpts += modules.map(function (m) { return '<option value="' + m.id + '">' + (m.title || m.id) + '</option>'; }).join('');
+  moduleEl.innerHTML = moduleOpts;
+}
 
 function openInviteForBatch(batchId) {
   openModal('modal-add-student');
@@ -1865,7 +1871,7 @@ async function inviteStudent() {
     phone: phone || '',
     firstLogin: false,
     avatar: name[0].toUpperCase(),
-    batchId: batchId || null,
+    enrolledBatches: batchId ? [batchId] : [],
     isDeleted:false
   };
 
@@ -2003,17 +2009,29 @@ function toggleBatch(id) {
 
 async function uploadDocument() {
   var title = document.getElementById('doc-title').value.trim();
-  var module = document.getElementById('doc-module').value;
-  var batch = document.getElementById('doc-batch').value;
+  var courseId = document.getElementById('doc-course').value;
+  var moduleId = document.getElementById('doc-module').value;
+  var batchId = document.getElementById('doc-batch').value;
   var url = document.getElementById('doc-url').value.trim() || '#';
   var type = document.getElementById('doc-type').value;
 
+  var moduleLabel = (function () {
+    var el = document.getElementById('doc-module');
+    if (!el || !el.options || el.selectedIndex < 0) return '';
+    return el.options[el.selectedIndex].text || '';
+  })();
+
   if (!title) { showToast('Please enter a document title.', '❌'); return; }
+  if (!courseId) { showToast('Please select a course.', '❌'); return; }
+  if (!batchId) { showToast('Please select a batch.', '❌'); return; }
 
   var docPayload = {
     title: title,
-    module: module,
-    batch: batch,
+    courseId: courseId,
+    moduleId: moduleId || '',
+    module: moduleLabel || '',
+    batchId: batchId,
+    batch: batchId,
     url: url,
     type: type,
     uploadedAt: new Date().toISOString().split('T')[0]
@@ -2045,14 +2063,34 @@ async function uploadDocument() {
 
   closeModal('modal-upload-doc');
   clearInputs(['doc-title', 'doc-url']);
+  if (byId('doc-course')) byId('doc-course').value = '';
+  if (byId('doc-batch')) byId('doc-batch').innerHTML = '<option value="">Select batch</option>';
+  if (byId('doc-module')) byId('doc-module').innerHTML = '<option value="">Select module (optional)</option>';
   renderAdminDocuments();
 }
 
-function deleteDoc(id) {
+async function deleteDoc(id) {
   if (!confirm('Delete this document?')) return;
+
+  if (USE_SERVER) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/documents/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to delete document on server');
+      showToast('Document deleted.', '🗑️');
+      renderAdminDocuments();
+      return;
+    } catch (err) {
+      console.warn('Server delete failed for document, falling back to local storage.', err);
+    }
+  }
+
   var docs = (ls('documents') || []).filter(function (d) { return d.id !== id; });
-  ls('documents', docs); renderAdminDocuments();
-  showToast('Document deleted.', '🗑️');
+  ls('documents', docs);
+  renderAdminDocuments();
+  showToast('Document deleted locally.', '⚠️');
 }
 
 async function addRecording() {
@@ -2060,17 +2098,31 @@ async function addRecording() {
   var date = document.getElementById('rec-date').value;
   var dur = document.getElementById('rec-duration').value.trim() || '—';
   var url = document.getElementById('rec-url').value.trim() || '#';
-  var batch = document.getElementById('rec-batch').value;
+  var courseId = document.getElementById('rec-course').value;
+  var batchId = document.getElementById('rec-batch').value;
+  var moduleId = document.getElementById('rec-module').value;
   var topics = document.getElementById('rec-topics').value.trim() || '—';
 
   if (!title || !date) { showToast('Please enter title and date.', '❌'); return; }
+  if (!courseId) { showToast('Please select a course.', '❌'); return; }
+  if (!batchId) { showToast('Please select a batch.', '❌'); return; }
+
+  var moduleLabel = (function () {
+    var el = document.getElementById('rec-module');
+    if (!el || !el.options || el.selectedIndex < 0) return '';
+    return el.options[el.selectedIndex].text || '';
+  })();
 
   var recPayload = {
     title: title,
     date: date,
     duration: dur,
     url: url,
-    batch: batch,
+    courseId: courseId,
+    moduleId: moduleId || '',
+    module: moduleLabel || '',
+    batchId: batchId,
+    batch: batchId,
     topics: topics
   };
 
@@ -2100,14 +2152,34 @@ async function addRecording() {
 
   closeModal('modal-add-recording');
   clearInputs(['rec-title', 'rec-date', 'rec-duration', 'rec-url', 'rec-topics']);
+  if (byId('rec-course')) byId('rec-course').value = '';
+  if (byId('rec-batch')) byId('rec-batch').innerHTML = '<option value="">Select batch</option>';
+  if (byId('rec-module')) byId('rec-module').innerHTML = '<option value="">Select module (optional)</option>';
   renderAdminRecordings();
 }
 
-function deleteRec(id) {
+async function deleteRec(id) {
   if (!confirm('Delete this recording?')) return;
+
+  if (USE_SERVER) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/admin/recordings/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to delete recording on server');
+      showToast('Recording deleted.', '🗑️');
+      renderAdminRecordings();
+      return;
+    } catch (err) {
+      console.warn('Server delete failed for recording, falling back to local storage.', err);
+    }
+  }
+
   var recs = (ls('recordings') || []).filter(function (r) { return r.id !== id; });
-  ls('recordings', recs); renderAdminRecordings();
-  showToast('Recording deleted.', '🗑️');
+  ls('recordings', recs);
+  renderAdminRecordings();
+  showToast('Recording deleted locally.', '⚠️');
 }
 
 function removeStudent(id) {
