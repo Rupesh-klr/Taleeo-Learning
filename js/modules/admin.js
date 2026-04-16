@@ -882,7 +882,7 @@ async function renderAdminDashboard() {
       <div class="grid-2" style="margin-bottom:20px;">
         
         <div class="card anim-in">
-          <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ New Batch</button></div>
+          <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openBatchModal()">+ New Batch</button></div>
           
           <div style="max-height: 320px; overflow-y: auto; padding-right: 5px;">
             ${data.activeBatches.map(b => {
@@ -915,16 +915,7 @@ async function renderAdminDashboard() {
 
       </div>
       
-      <div class="card anim-in">
-        <div class="card-header"><div class="card-title">Quick Actions</div></div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">🗂️ Create Batch</button>
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">👤 Invite Student</button>
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">📄 Upload Notes</button>
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-add-recording')">🎥 Add Recording</button>
-          <button class="btn btn-v btn-sm" onclick="navTo('admin-certificates',null);document.querySelectorAll('.sb-item')[7]&&document.querySelectorAll('.sb-item')[7].classList.add('active')">🏆 Generate Certificates</button>
-        </div>
-      </div>
+
     `;
   } catch (e) {
     console.log(e)
@@ -943,7 +934,7 @@ async function renderAdminDashboard() {
       </div>
       <div class="grid-2" style="margin-bottom:20px;">
         <div class="card anim-in">
-          <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">+ New Batch</button></div>
+          <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openBatchModal()">+ New Batch</button></div>
           ${batches.map(function (b) {
             var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
             var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
@@ -969,16 +960,7 @@ async function renderAdminDashboard() {
           }).join('')}
         </div>
       </div>
-      <div class="card anim-in">
-        <div class="card-header"><div class="card-title">Quick Actions</div></div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-add-batch')">🗂️ Create Batch</button>
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">👤 Invite Student</button>
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">📄 Upload Notes</button>
-          <button class="btn btn-v btn-sm" onclick="openModal('modal-add-recording')">🎥 Add Recording</button>
-          <button class="btn btn-v btn-sm" onclick="navTo('admin-certificates',null);document.querySelectorAll('.sb-item')[7]&&document.querySelectorAll('.sb-item')[7].classList.add('active')">🏆 Generate Certificates</button>
-        </div>
-      </div>
+
     `;
   }
 }
@@ -1389,6 +1371,7 @@ async function renderAdminDocuments() {
           <div style="font-size:.68rem;color:var(--dim);margin-bottom:12px;">Uploaded: ${d.uploadedAt}</div>
           <div style="display:flex;gap:7px;">
             <a href="${d.url}" target="_blank" class="btn btn-out btn-sm">Open ↗</a>
+            <button class="btn btn-b btn-sm" onclick="openEditDocument('${d.id}')">Edit</button>
             <button class="btn btn-danger btn-sm" onclick="deleteDoc('${d.id}')">Delete</button>
           </div>
         </div>`;
@@ -1458,6 +1441,7 @@ async function renderAdminRecordings() {
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="badge badge-b">${batch.name.substring(0, 18)}...</span>
               <a href="${r.url}" target="_blank" class="btn btn-out btn-sm">Watch ▶</a>
+              <button class="btn btn-b btn-sm" onclick="openEditRecording('${r.id}')">Edit</button>
               <button class="btn btn-danger btn-sm" onclick="deleteRec('${r.id}')">Delete</button>
             </div>
           </div>
@@ -1653,6 +1637,120 @@ async function renderAdminCertificates() {
 /* ═══════════════════════════════════════════════════════
    ACTION FUNCTIONS
 ═══════════════════════════════════════════════════════ */
+let editingDocumentId = null;
+let editingRecordingId = null;
+
+function setDocModalMode(isEdit) {
+  var modal = byId('modal-upload-doc');
+  if (!modal) return;
+  var titleEl = modal.querySelector('.modal-title');
+  var submitBtn = modal.querySelector('.btn.btn-v.btn-full');
+  if (titleEl) titleEl.textContent = isEdit ? 'Edit Document / Notes' : 'Upload Document / Notes';
+  if (submitBtn) submitBtn.textContent = isEdit ? 'Update Document →' : 'Upload Document →';
+}
+
+function setRecordingModalMode(isEdit) {
+  var modal = byId('modal-add-recording');
+  if (!modal) return;
+  var titleEl = modal.querySelector('.modal-title');
+  var submitBtn = modal.querySelector('.btn.btn-v.btn-full');
+  if (titleEl) titleEl.textContent = isEdit ? 'Edit Class Recording' : 'Add Class Recording';
+  if (submitBtn) submitBtn.textContent = isEdit ? 'Update Recording →' : 'Add Recording →';
+}
+
+function clearDocumentForm() {
+  clearInputs(['doc-title', 'doc-url']);
+  if (byId('doc-type')) byId('doc-type').value = 'pdf';
+  if (byId('doc-course')) byId('doc-course').value = '';
+  if (byId('doc-batch')) byId('doc-batch').innerHTML = '<option value="">Select batch</option>';
+  if (byId('doc-module')) byId('doc-module').innerHTML = '<option value="">Select module (optional)</option>';
+}
+
+function clearRecordingForm() {
+  clearInputs(['rec-title', 'rec-date', 'rec-duration', 'rec-url', 'rec-topics']);
+  if (byId('rec-course')) byId('rec-course').value = '';
+  if (byId('rec-batch')) byId('rec-batch').innerHTML = '<option value="">Select batch</option>';
+  if (byId('rec-module')) byId('rec-module').innerHTML = '<option value="">Select module (optional)</option>';
+}
+
+async function fetchAllDocumentsForEdit() {
+  if (USE_SERVER) {
+    const response = await fetch(`${BACKEND_URL}/admin/documents`, { credentials: 'include' });
+    if (!response.ok) throw new Error('Failed to load documents');
+    return await response.json();
+  }
+  return ls('documents') || [];
+}
+
+async function fetchAllRecordingsForEdit() {
+  if (USE_SERVER) {
+    const response = await fetch(`${BACKEND_URL}/admin/recordings`, { credentials: 'include' });
+    if (!response.ok) throw new Error('Failed to load recordings');
+    return await response.json();
+  }
+  return ls('recordings') || [];
+}
+
+async function openEditDocument(id) {
+  try {
+    const docs = await fetchAllDocumentsForEdit();
+    const doc = (docs || []).find(function (d) { return String(d.id) === String(id); });
+    if (!doc) { showToast('Document not found.', '❌'); return; }
+
+    editingDocumentId = doc.id;
+    setDocModalMode(true);
+    byId('modal-upload-doc').classList.add('open');
+    await populateCourseBatchModuleSelectors('modal-upload-doc');
+
+    if (byId('doc-title')) byId('doc-title').value = doc.title || '';
+    if (byId('doc-url')) byId('doc-url').value = doc.url || '';
+    if (byId('doc-type')) byId('doc-type').value = doc.type || 'pdf';
+
+    const courseId = doc.courseId || '';
+    const batchId = doc.batchId || doc.batch || '';
+    const moduleId = doc.moduleId || '';
+
+    if (byId('doc-course')) byId('doc-course').value = courseId;
+    if (courseId) await onDocCourseChange(courseId);
+    if (byId('doc-batch')) byId('doc-batch').value = batchId;
+    if (byId('doc-module')) byId('doc-module').value = moduleId;
+  } catch (error) {
+    console.warn('Failed to load document for editing', error);
+    showToast('Unable to open document for edit.', '❌');
+  }
+}
+
+async function openEditRecording(id) {
+  try {
+    const recs = await fetchAllRecordingsForEdit();
+    const rec = (recs || []).find(function (r) { return String(r.id) === String(id); });
+    if (!rec) { showToast('Recording not found.', '❌'); return; }
+
+    editingRecordingId = rec.id;
+    setRecordingModalMode(true);
+    byId('modal-add-recording').classList.add('open');
+    await populateCourseBatchModuleSelectors('modal-add-recording');
+
+    if (byId('rec-title')) byId('rec-title').value = rec.title || '';
+    if (byId('rec-date')) byId('rec-date').value = rec.date || '';
+    if (byId('rec-duration')) byId('rec-duration').value = rec.duration || '';
+    if (byId('rec-url')) byId('rec-url').value = rec.url || '';
+    if (byId('rec-topics')) byId('rec-topics').value = rec.topics || '';
+
+    const courseId = rec.courseId || '';
+    const batchId = rec.batchId || rec.batch || '';
+    const moduleId = rec.moduleId || '';
+
+    if (byId('rec-course')) byId('rec-course').value = courseId;
+    if (courseId) await onRecCourseChange(courseId);
+    if (byId('rec-batch')) byId('rec-batch').value = batchId;
+    if (byId('rec-module')) byId('rec-module').value = moduleId;
+  } catch (error) {
+    console.warn('Failed to load recording for editing', error);
+    showToast('Unable to open recording for edit.', '❌');
+  }
+}
+
 function openModal(id) {
   // populate legacy batch selects in modals
   var batches = ls('batches') || [];
@@ -1666,6 +1764,16 @@ function openModal(id) {
   });
 
   if (id === 'modal-upload-doc' || id === 'modal-add-recording') {
+    if (id === 'modal-upload-doc') {
+      editingDocumentId = null;
+      setDocModalMode(false);
+      clearDocumentForm();
+    }
+    if (id === 'modal-add-recording') {
+      editingRecordingId = null;
+      setRecordingModalMode(false);
+      clearRecordingForm();
+    }
     populateCourseBatchModuleSelectors(id).catch(function (err) {
       console.warn('Failed to populate course/batch/module selectors', err);
     });
@@ -1673,7 +1781,17 @@ function openModal(id) {
 
   byId(id).classList.add('open');
 }
-function closeModal(id) { byId(id).classList.remove('open'); }
+function closeModal(id) {
+  byId(id).classList.remove('open');
+  if (id === 'modal-upload-doc') {
+    editingDocumentId = null;
+    setDocModalMode(false);
+  }
+  if (id === 'modal-add-recording') {
+    editingRecordingId = null;
+    setRecordingModalMode(false);
+  }
+}
 
 async function populateCourseBatchModuleSelectors(modalId) {
   const data = await apiGet('/admin/dropdowns?item=courses&limit=1000', true);
@@ -2037,35 +2155,55 @@ async function uploadDocument() {
     uploadedAt: new Date().toISOString().split('T')[0]
   };
 
+  if (editingDocumentId) {
+    docPayload.id = editingDocumentId;
+  }
+
   if (USE_SERVER) {
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/documents`, {
-        method: 'POST',
+      const isEdit = !!editingDocumentId;
+      const response = await fetch(`${BACKEND_URL}/admin/documents${isEdit ? '/' + encodeURIComponent(editingDocumentId) : ''}`, {
+        method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include' ,// <--- ADD THIS LINE
         body: JSON.stringify(docPayload)
       });
-      if (!response.ok) throw new Error('Server failed to upload document');
-      showToast('Document "' + title + '" uploaded!', '✅');
+      if (!response.ok) throw new Error('Server failed to save document');
+      showToast(isEdit ? 'Document updated!' : 'Document "' + title + '" uploaded!', '✅');
     } catch (error) {
       console.warn("Backend unavailable, saving to LocalStorage.", error);
       var docs = ls('documents') || [];
-      docs.push({ id: 'd' + Date.now(), ...docPayload });
+      if (editingDocumentId) {
+        docs = docs.map(function (d) {
+          return String(d.id) === String(editingDocumentId)
+            ? { ...d, ...docPayload, id: editingDocumentId }
+            : d;
+        });
+      } else {
+        docs.push({ id: 'd' + Date.now(), ...docPayload });
+      }
       ls('documents', docs);
-      showToast('Document saved locally (Server Offline).', '⚠️');
+      showToast(editingDocumentId ? 'Document updated locally (Server Offline).' : 'Document saved locally (Server Offline).', '⚠️');
     }
   } else {
     var docs = ls('documents') || [];
-    docs.push({ id: 'd' + Date.now(), ...docPayload });
+    if (editingDocumentId) {
+      docs = docs.map(function (d) {
+        return String(d.id) === String(editingDocumentId)
+          ? { ...d, ...docPayload, id: editingDocumentId }
+          : d;
+      });
+    } else {
+      docs.push({ id: 'd' + Date.now(), ...docPayload });
+    }
     ls('documents', docs);
-    showToast('Document "' + title + '" uploaded!', '✅');
+    showToast(editingDocumentId ? 'Document updated!' : 'Document "' + title + '" uploaded!', '✅');
   }
 
+  editingDocumentId = null;
+  setDocModalMode(false);
   closeModal('modal-upload-doc');
-  clearInputs(['doc-title', 'doc-url']);
-  if (byId('doc-course')) byId('doc-course').value = '';
-  if (byId('doc-batch')) byId('doc-batch').innerHTML = '<option value="">Select batch</option>';
-  if (byId('doc-module')) byId('doc-module').innerHTML = '<option value="">Select module (optional)</option>';
+  clearDocumentForm();
   renderAdminDocuments();
 }
 
@@ -2126,35 +2264,55 @@ async function addRecording() {
     topics: topics
   };
 
+  if (editingRecordingId) {
+    recPayload.id = editingRecordingId;
+  }
+
   if (USE_SERVER) {
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/recordings`, {
-        method: 'POST',
+      const isEdit = !!editingRecordingId;
+      const response = await fetch(`${BACKEND_URL}/admin/recordings${isEdit ? '/' + encodeURIComponent(editingRecordingId) : ''}`, {
+        method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include' ,// <--- ADD THIS LINE
         body: JSON.stringify(recPayload)
       });
-      if (!response.ok) throw new Error('Server failed to add recording');
-      showToast('Recording added!', '✅');
+      if (!response.ok) throw new Error('Server failed to save recording');
+      showToast(isEdit ? 'Recording updated!' : 'Recording added!', '✅');
     } catch (error) {
       console.warn("Backend unavailable, saving to LocalStorage.", error);
       var recs = ls('recordings') || [];
-      recs.push({ id: 'r' + Date.now(), ...recPayload });
+      if (editingRecordingId) {
+        recs = recs.map(function (r) {
+          return String(r.id) === String(editingRecordingId)
+            ? { ...r, ...recPayload, id: editingRecordingId }
+            : r;
+        });
+      } else {
+        recs.push({ id: 'r' + Date.now(), ...recPayload });
+      }
       ls('recordings', recs);
-      showToast('Recording added locally (Server Offline).', '⚠️');
+      showToast(editingRecordingId ? 'Recording updated locally (Server Offline).' : 'Recording added locally (Server Offline).', '⚠️');
     }
   } else {
     var recs = ls('recordings') || [];
-    recs.push({ id: 'r' + Date.now(), ...recPayload });
+    if (editingRecordingId) {
+      recs = recs.map(function (r) {
+        return String(r.id) === String(editingRecordingId)
+          ? { ...r, ...recPayload, id: editingRecordingId }
+          : r;
+      });
+    } else {
+      recs.push({ id: 'r' + Date.now(), ...recPayload });
+    }
     ls('recordings', recs);
-    showToast('Recording added!', '✅');
+    showToast(editingRecordingId ? 'Recording updated!' : 'Recording added!', '✅');
   }
 
+  editingRecordingId = null;
+  setRecordingModalMode(false);
   closeModal('modal-add-recording');
-  clearInputs(['rec-title', 'rec-date', 'rec-duration', 'rec-url', 'rec-topics']);
-  if (byId('rec-course')) byId('rec-course').value = '';
-  if (byId('rec-batch')) byId('rec-batch').innerHTML = '<option value="">Select batch</option>';
-  if (byId('rec-module')) byId('rec-module').innerHTML = '<option value="">Select module (optional)</option>';
+  clearRecordingForm();
   renderAdminRecordings();
 }
 
