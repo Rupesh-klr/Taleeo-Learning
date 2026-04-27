@@ -137,7 +137,7 @@ async function saveNewCourse() {
   const payload = {
     name: document.getElementById('new-c-name').value,
     duration: document.getElementById('new-c-dur').value,
-    image: document.getElementById('new-c-img').value || "https://taleeo-assets.com/courses/default.jpg",
+    // image: document.getElementById('new-c-img').value || "https://taleeo-assets.com/courses/default.jpg",
     description: document.getElementById('new-c-desc').value,
     // System fields will be handled by backend
   };
@@ -851,7 +851,7 @@ function renderAdminPage(page) {
   else renderComingSoonPage();
 }
 
-window.renderComingSoonPage = function() {
+window.renderComingSoonPage = function () {
   const mc = document.getElementById('main-content');
   if (mc) {
     mc.innerHTML = `
@@ -867,9 +867,9 @@ window.renderComingSoonPage = function() {
 // Local store for likes so it persists during session
 if (!window.communityLikes) window.communityLikes = { 1: false, 2: false, 3: false, 4: false };
 
-window.renderMyCommunityPage = function(activeTab = 'students') {
+window.renderMyCommunityPage = function (activeTab = 'students') {
   const mc = document.getElementById('main-content');
-  
+
   // Sample posts data
   const posts = {
     students: [
@@ -941,7 +941,7 @@ window.renderMyCommunityPage = function(activeTab = 'students') {
   `;
 };
 
-window.sharePostGeneral = async function(postId, postContent) {
+window.sharePostGeneral = async function (postId, postContent) {
   const url = window.location.origin + window.location.pathname + '?post=' + postId;
   const text = `Check out this post on TALeeO Community:\n"${postContent}"\n\n`;
   if (navigator.share) {
@@ -960,14 +960,14 @@ window.sharePostGeneral = async function(postId, postContent) {
   }
 };
 
-window.sharePostLinkedIn = function(postId, postContent) {
+window.sharePostLinkedIn = function (postId, postContent) {
   const url = window.location.origin + window.location.pathname + '?post=' + postId;
   const companyUrl = "https://www.linkedin.com/company/taleeo-learning-school/";
   const textToCopy = `"${postContent}"\n\nRead more at ${url}\n\n@Taleeo Learning School of Business ${companyUrl}`;
-  
+
   // Also copy to clipboard as a backup
   navigator.clipboard.writeText(textToCopy);
-  
+
   setTimeout(() => {
     // This endpoint actively opens the "Create a post" modal and pre-fills the text!
     const linkedinShareUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(textToCopy)}`;
@@ -975,13 +975,13 @@ window.sharePostLinkedIn = function(postId, postContent) {
   }, 300);
 };
 
-window.toggleCommunityLike = function(postId, activeTab) {
+window.toggleCommunityLike = function (postId, activeTab) {
   // Local state update
   window.communityLikes[postId] = !window.communityLikes[postId];
-  
+
   // Re-render to update UI
   renderMyCommunityPage(activeTab);
-  
+
   // Remote API call block (Commented out as requested)
   /*
   fetch(\`\${BACKEND_URL}/api/community/posts/\${postId}/like\`, {
@@ -1002,7 +1002,7 @@ window.toggleCommunityLike = function(postId, activeTab) {
 setTimeout(() => {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('post') && typeof navTo === 'function') {
-      navTo('my-community', null);
+    navTo('my-community', null);
   }
 }, 1500);
 
@@ -1466,19 +1466,45 @@ async function renderAdminStudents() {
         <thead><tr><th>Student</th><th>Email</th><th>Phone</th><th>Batch</th><th>Password</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>
           ${students.map(function (s) {
-    var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
+    let studentBatches = [];
+
+    // 1. Check enrolledBatches array on student
+    if (s.enrolledBatches && s.enrolledBatches.length > 0) {
+      studentBatches = s.enrolledBatches.map(bId => batches.find(b => b.id === bId)).filter(Boolean);
+    }
+
+    // 2. Also check students array on each batch (backward compatibility & sync fallback)
+    batches.forEach(b => {
+      if (b.students && b.students.includes(s.id)) {
+        if (!studentBatches.some(existingB => existingB.id === b.id)) {
+          studentBatches.push(b);
+        }
+      }
+    });
+    console.log(studentBatches);
+    console.log(s.enrolledBatches);
+    console.log(batches);
+
     return `<tr>
               <td><div style="display:flex;align-items:center;gap:9px;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">${s.name[0]}</div><span style="font-weight:600;">${s.name}</span></div></td>
               <td style="color:var(--muted);">${s.email}</td>
               <td style="color:var(--muted);">${s.phone || '—'}</td>
-              <td>${batch ? '<span class="badge badge-v">' + batch.name.substring(0, 20) + '...</span>' : '<span class="badge badge-r">No Batch</span>'}</td>
+              <td>
+                ${studentBatches.length > 0
+        ? studentBatches.map(b => {
+          // Safely encode zoom link or set to empty
+          const zoomLink = (b.zoomDetails && b.zoomDetails.link) ? encodeURIComponent(b.zoomDetails.link) : '';
+          return `<span class="badge badge-v" style="margin-bottom: 4px; display: inline-flex; align-items: center; gap: 5px;">${b.name.length > 20 ? b.name.substring(0, 20) + '...' : b.name} <span style="cursor:pointer;" onclick="showCourseInfo('${b.courseId}', decodeURIComponent('${zoomLink}'))" title="View Course & Batch Details">ℹ️</span></span>`;
+        }).join('<br/>')
+        : '<span class="badge badge-r">No Batch</span>'}
+              </td>
               <td style="font-family:monospace;font-size:.78rem;color:var(--v2);">${s.password}</td>
               <td><span class="badge ${s.firstLogin ? 'badge-g' : 'badge-a'}">${s.firstLogin ? 'Active' : 'Invited'}</span></td>
-              <td><button class="btn btn-danger btn-sm" onclick="removeStudent('${s.id}')">Remove</button></td>
+              <!-- <td><button class="btn btn-danger btn-sm" onclick="removeStudent('${s.id}')">Remove</button></td> -->
               <td>
     <button class="btn btn-danger btn-sm" 
             onclick="deleteStudentPermanently('${s.id}', '${s.name}')">
-        Remove from batch
+        Remove from All batch
     </button>
 </td>
             </tr>`;
@@ -1489,6 +1515,67 @@ async function renderAdminStudents() {
     </div>
   `;
 }
+
+window.showCourseInfo = async function (courseId, zoomLink = '') {
+  if (!courseId || courseId === 'undefined') return showToast('Course ID not linked to this batch', '❌');
+
+  // Create or update modal
+  let modalHtml = `
+    <div class="modal-overlay" id="modal-course-info">
+      <div class="modal" style="text-align: center; max-width: 400px;">
+        <button class="modal-close" onclick="closeModal('modal-course-info')">✕</button>
+        <div class="modal-title">Course & Batch Details</div>
+        <div id="course-info-content" style="margin-top: 15px; color: var(--muted);">Loading details...</div>
+      </div>
+    </div>
+  `;
+  if (!document.getElementById('modal-course-info')) {
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+  
+  // Standard way to open modals in this codebase
+  const modal = document.getElementById('modal-course-info');
+  modal.style.display = ''; // Clear inline styles if any
+  modal.classList.add('open');
+  document.getElementById('course-info-content').innerHTML = 'Loading details...';
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/courses/search?q=${courseId}&limit=20`, {
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Failed to fetch course');
+    const data = await response.json();
+
+    if (data.courses && data.courses.length > 0) {
+      const course = data.courses[0];
+
+      // Attempt to extract raw URL if zoomLink contains "Join Zoom Meeting" text
+      let cleanZoomUrl = zoomLink;
+      if (zoomLink.includes('http')) {
+        const match = zoomLink.match(/(https?:\/\/[^\s]+)/);
+        if (match) cleanZoomUrl = match[1];
+      }
+
+      document.getElementById('course-info-content').innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:15px; text-align: left;">
+          <!-- ${course.image1 ? `<img src="${course.image1}" onerror="this.style.display='none'" style="width: 100%; border-radius: 8px; max-height: 200px; object-fit: cover; background: #eee;">` : ''} -->
+          <h3 style="margin: 0; color: white;">${course.name}</h3>
+          <p style="margin: 0; color: var(--dim); line-height: 1.4;">${course.description || 'No description available for this course.'}</p>
+          <div style="color: white; font-size: 0.9rem; background: var(--bg); padding: 10px; border-radius: 6px; border: 1px solid var(--border);">
+            <div style="margin-bottom: 5px;"><strong>Duration:</strong> ${course.duration || 'N/A'}</div>
+            <div style="margin-bottom: 5px;"><strong>Course ID:</strong> ${course.id}</div>
+            ${cleanZoomUrl ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);"><strong>Batch Zoom Link:</strong> <a href="${cleanZoomUrl}" target="_blank" style="color: var(--v2); text-decoration: underline; word-break: break-all;">Click to Join</a></div>` : ''}
+          </div>
+        </div>
+      `;
+    } else {
+      document.getElementById('course-info-content').innerHTML = 'Course not found.';
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById('course-info-content').innerHTML = 'Error fetching info.';
+  }
+};
 
 async function renderAdminDocuments() {
   var mc = document.getElementById('main-content');
