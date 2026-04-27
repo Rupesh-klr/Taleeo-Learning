@@ -8,7 +8,9 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>TALeeO LMS — Learning Management System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="style.css?ts=20260416T1545">
 </head>
@@ -41,10 +43,18 @@
           </div>
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" class="form-input" id="login-pass" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()">
+            <div style="position: relative;">
+              <input type="password" class="form-input" id="login-pass" placeholder="Enter your password"
+                onkeydown="if(event.key==='Enter')doLogin()" style="padding-right: 45px;">
+              <button type="button"
+                onclick="const p=document.getElementById('login-pass'); if(p.type==='password'){p.type='text'; this.textContent='🙈';}else{p.type='password'; this.textContent='👁️';}"
+                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0; outline: none; opacity: 0.7; transition: opacity 0.2s;"
+                onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">👁️</button>
+            </div>
           </div>
           <button class="btn btn-v btn-full" onclick="doLogin()">Sign In →</button>
-          <p style="text-align:center;margin-top:16px;font-size:.75rem;color:var(--dim);">New student? You'll receive credentials via email when enrolled.</p>
+          <p style="text-align:center;margin-top:16px;font-size:.75rem;color:var(--dim);">New student? You'll receive
+            credentials via email when enrolled.</p>
         </div>
 
         <div id="step-otp" style="display:none;">
@@ -60,7 +70,8 @@
             <input class="otp-input" maxlength="1" oninput="otpInput(this,5)" id="otp5">
           </div>
           <button class="btn btn-v btn-full" onclick="verifyOtp()">Verify OTP →</button>
-          <p style="text-align:center;margin-top:14px;font-size:.74rem;color:var(--dim);">Demo OTP: <strong style="color:var(--v2);">123456</strong></p>
+          <p style="text-align:center;margin-top:14px;font-size:.74rem;color:var(--dim);">Demo OTP: <strong
+              style="color:var(--v2);">123456</strong></p>
         </div>
 
       </div>
@@ -69,7 +80,8 @@
 
   <div id="app-shell">
 
-    <button id="mobile-menu-btn" class="mobile-menu-btn" type="button" aria-label="Toggle menu" onclick="toggleMobileSidebar()">☰</button>
+    <button id="mobile-menu-btn" class="mobile-menu-btn" type="button" aria-label="Toggle menu"
+      onclick="toggleMobileSidebar()">☰</button>
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
 
     <div class="sidebar" id="sidebar">
@@ -78,7 +90,7 @@
         <div class="sb-logo-sub" id="sb-role-badge">Loading...</div>
       </div>
       <nav class="sidebar-nav" id="sidebar-nav">
-        </nav>
+      </nav>
       <div class="sidebar-footer">
         <div class="sb-user">
           <div class="sb-avatar" id="sb-avatar" style="background:linear-gradient(135deg,var(--v1),var(--b1))">U</div>
@@ -92,7 +104,7 @@
     </div>
 
     <div class="main-content" id="main-content">
-      </div>
+    </div>
 
   </div>
 
@@ -100,10 +112,14 @@
     <div class="modal">
       <button class="modal-close" onclick="closeModal('modal-add-student')">✕</button>
       <div class="modal-title">Invite Student</div>
-      <div class="modal-sub">Enter the student's details. They'll receive login credentials via email automatically.</div>
-      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="new-student-name" placeholder="Student's full name"></div>
-      <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="new-student-email" placeholder="student@email.com"></div>
-      <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input" id="new-student-phone" placeholder="+91 98765 43210"></div>
+      <div class="modal-sub">Enter the student's details. They'll receive login credentials via email automatically.
+      </div>
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="new-student-name"
+          placeholder="Student's full name"></div>
+      <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input"
+          id="new-student-email" placeholder="student@email.com"></div>
+      <div class="form-group"><label class="form-label">Phone Number</label><input class="form-input"
+          id="new-student-phone" placeholder="+91 98765 43210"></div>
       <div class="form-group"><label class="form-label">Assign Batch</label>
         <select class="form-input" id="new-student-batch">
           <option value="">Select batch</option>
@@ -118,7 +134,8 @@
       <button class="modal-close" onclick="closeModal('modal-add-batch')">✕</button>
       <div class="modal-title">Create New Batch</div>
       <div class="modal-sub">Set up a batch with schedule, Zoom link, and course duration.</div>
-      <div class="form-group"><label class="form-label">Batch Name</label><input class="form-input" id="new-batch-name" placeholder="e.g. Weekend Batch April 2026"></div>
+      <div class="form-group"><label class="form-label">Batch Name</label><input class="form-input" id="new-batch-name"
+          placeholder="e.g. Weekend Batch April 2026"></div>
       <div class="form-group"><label class="form-label">Batch Type</label>
         <select class="form-input" id="new-batch-type">
           <option value="weekend">Weekend Batch (Sat & Sun)</option>
@@ -126,13 +143,19 @@
         </select>
       </div>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-input" id="new-batch-start"></div>
-        <div class="form-group"><label class="form-label">End Date</label><input type="date" class="form-input" id="new-batch-end"></div>
+        <div class="form-group"><label class="form-label">Start Date</label><input type="date" class="form-input"
+            id="new-batch-start"></div>
+        <div class="form-group"><label class="form-label">End Date</label><input type="date" class="form-input"
+            id="new-batch-end"></div>
       </div>
-      <div class="form-group"><label class="form-label">Session Timing</label><input class="form-input" id="new-batch-timing" placeholder="e.g. 10:00 AM – 12:00 PM IST"></div>
-      <div class="form-group"><label class="form-label">Zoom Meeting Link</label><input class="form-input" id="new-batch-zoom" placeholder="https://zoom.us/j/..."></div>
-      <div class="form-group"><label class="form-label">Zoom Meeting ID</label><input class="form-input" id="new-batch-zoom-id" placeholder="123 456 7890"></div>
-      <div class="form-group"><label class="form-label">Passcode</label><input class="form-input" id="new-batch-zoom-pass" placeholder="abc123"></div>
+      <div class="form-group"><label class="form-label">Session Timing</label><input class="form-input"
+          id="new-batch-timing" placeholder="e.g. 10:00 AM – 12:00 PM IST"></div>
+      <div class="form-group"><label class="form-label">Zoom Meeting Link</label><input class="form-input"
+          id="new-batch-zoom" placeholder="https://zoom.us/j/..."></div>
+      <div class="form-group"><label class="form-label">Zoom Meeting ID</label><input class="form-input"
+          id="new-batch-zoom-id" placeholder="123 456 7890"></div>
+      <div class="form-group"><label class="form-label">Passcode</label><input class="form-input"
+          id="new-batch-zoom-pass" placeholder="abc123"></div>
       <button class="btn btn-v btn-full" onclick="createBatch()">Create Batch →</button>
     </div>
   </div>
@@ -142,7 +165,8 @@
       <button class="modal-close" onclick="closeModal('modal-upload-doc')">✕</button>
       <div class="modal-title">Upload Document / Notes</div>
       <div class="modal-sub">Documents will be visible to all students in the selected batch.</div>
-      <div class="form-group"><label class="form-label">Document Title</label><input class="form-input" id="doc-title" placeholder="e.g. BRD Template – Week 1"></div>
+      <div class="form-group"><label class="form-label">Document Title</label><input class="form-input" id="doc-title"
+          placeholder="e.g. BRD Template – Week 1"></div>
       <div class="form-group"><label class="form-label">Course <span style="color:var(--r1)">*</span></label>
         <select class="form-input" id="doc-course" onchange="onDocCourseChange(this.value)">
           <option value="">Select course</option>
@@ -158,7 +182,8 @@
           <option value="">Select module (optional)</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Document URL / Drive Link</label><input class="form-input" id="doc-url" placeholder="https://drive.google.com/..."></div>
+      <div class="form-group"><label class="form-label">Document URL / Drive Link</label><input class="form-input"
+          id="doc-url" placeholder="https://drive.google.com/..."></div>
       <div class="form-group"><label class="form-label">Document Type</label>
         <select class="form-input" id="doc-type">
           <option value="pdf">PDF Notes</option>
@@ -177,10 +202,14 @@
       <button class="modal-close" onclick="closeModal('modal-add-recording')">✕</button>
       <div class="modal-title">Add Class Recording</div>
       <div class="modal-sub">Add a recorded Zoom session day-wise for students to review.</div>
-      <div class="form-group"><label class="form-label">Class Day Title</label><input class="form-input" id="rec-title" placeholder="e.g. Day 3 – Requirements Gathering Deep Dive"></div>
-      <div class="form-group"><label class="form-label">Session Date</label><input type="date" class="form-input" id="rec-date"></div>
-      <div class="form-group"><label class="form-label">Duration</label><input class="form-input" id="rec-duration" placeholder="e.g. 2h 15m"></div>
-      <div class="form-group"><label class="form-label">Recording URL (Zoom/Drive)</label><input class="form-input" id="rec-url" placeholder="https://zoom.us/rec/..."></div>
+      <div class="form-group"><label class="form-label">Class Day Title</label><input class="form-input" id="rec-title"
+          placeholder="e.g. Day 3 – Requirements Gathering Deep Dive"></div>
+      <div class="form-group"><label class="form-label">Session Date</label><input type="date" class="form-input"
+          id="rec-date"></div>
+      <div class="form-group"><label class="form-label">Duration</label><input class="form-input" id="rec-duration"
+          placeholder="e.g. 2h 15m"></div>
+      <div class="form-group"><label class="form-label">Recording URL (Zoom/Drive)</label><input class="form-input"
+          id="rec-url" placeholder="https://zoom.us/rec/..."></div>
       <div class="form-group"><label class="form-label">Course <span style="color:var(--r1)">*</span></label>
         <select class="form-input" id="rec-course" onchange="onRecCourseChange(this.value)">
           <option value="">Select course</option>
@@ -196,7 +225,8 @@
           <option value="">Select module (optional)</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">Topics Covered</label><input class="form-input" id="rec-topics" placeholder="BRD, FRD, RTM, Stakeholder interviews"></div>
+      <div class="form-group"><label class="form-label">Topics Covered</label><input class="form-input" id="rec-topics"
+          placeholder="BRD, FRD, RTM, Stakeholder interviews"></div>
       <button class="btn btn-v btn-full" onclick="addRecording()">Add Recording →</button>
     </div>
   </div>
@@ -213,60 +243,61 @@
 
   <canvas id="cert-canvas" width="900" height="636"></canvas>
   <div class="modal-overlay" id="modal-manage-module">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('modal-manage-module')">✕</button>
-    <div class="modal-title" id="module-modal-title">Manage Module</div>
-    <div class="modal-sub">Linked Course: <span id="module-modal-course-name" style="color:var(--v2);"></span></div>
-    
-    <div class="form-group">
-      <label class="form-label">Module Title</label>
-      <input class="form-input" id="edit-mod-title" placeholder="e.g. Introduction to SEO">
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Topics (One per line)</label>
-      <textarea class="form-input" id="edit-mod-topics" style="height:120px;" placeholder="Keyword Research&#10;On-Page SEO"></textarea>
-    </div>
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('modal-manage-module')">✕</button>
+      <div class="modal-title" id="module-modal-title">Manage Module</div>
+      <div class="modal-sub">Linked Course: <span id="module-modal-course-name" style="color:var(--v2);"></span></div>
 
-    <input type="hidden" id="edit-mod-id">
-    <input type="hidden" id="edit-mod-courseId">
-    
-    <button class="btn btn-v btn-full" onclick="saveModuleAction()">Save Module Content →</button>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-manage-batch">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('modal-manage-batch')">✕</button>
-    <div class="modal-title" id="batch-modal-title">Manage Batch</div>
-    
-    <div class="form-group">
-      <label class="form-label">Batch Name</label>
-      <input class="form-input" id="edit-batch-name" placeholder="e.g. Weekday Batch - April 2026">
-    </div>
-
-    <div class="grid-2">
       <div class="form-group">
-        <label class="form-label">Start Date</label>
-        <input type="date" class="form-input" id="edit-batch-start">
+        <label class="form-label">Module Title</label>
+        <input class="form-input" id="edit-mod-title" placeholder="e.g. Introduction to SEO">
       </div>
+
       <div class="form-group">
-        <label class="form-label">End Date</label>
-        <input type="date" class="form-input" id="edit-batch-end">
+        <label class="form-label">Topics (One per line)</label>
+        <textarea class="form-input" id="edit-mod-topics" style="height:120px;"
+          placeholder="Keyword Research&#10;On-Page SEO"></textarea>
       </div>
+
+      <input type="hidden" id="edit-mod-id">
+      <input type="hidden" id="edit-mod-courseId">
+
+      <button class="btn btn-v btn-full" onclick="saveModuleAction()">Save Module Content →</button>
     </div>
-
-    <div class="form-group">
-      <label class="form-label">Session Timing</label>
-      <input class="form-input" id="edit-batch-timing" placeholder="07:00 PM – 09:00 PM IST">
-    </div>
-
-    <input type="hidden" id="edit-batch-id">
-    <input type="hidden" id="edit-batch-courseId">
-
-    <button class="btn btn-v btn-full" onclick="saveBatchAction()">Save Batch Schedule →</button>
   </div>
-</div>
+
+  <div class="modal-overlay" id="modal-manage-batch">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal('modal-manage-batch')">✕</button>
+      <div class="modal-title" id="batch-modal-title">Manage Batch</div>
+
+      <div class="form-group">
+        <label class="form-label">Batch Name</label>
+        <input class="form-input" id="edit-batch-name" placeholder="e.g. Weekday Batch - April 2026">
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-input" id="edit-batch-start">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input type="date" class="form-input" id="edit-batch-end">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Session Timing</label>
+        <input class="form-input" id="edit-batch-timing" placeholder="07:00 PM – 09:00 PM IST">
+      </div>
+
+      <input type="hidden" id="edit-batch-id">
+      <input type="hidden" id="edit-batch-courseId">
+
+      <button class="btn btn-v btn-full" onclick="saveBatchAction()">Save Batch Schedule →</button>
+    </div>
+  </div>
 
   <script src="script.js?ts=20260416T1545"></script>
 </body>

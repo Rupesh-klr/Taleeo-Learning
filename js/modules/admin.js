@@ -2,78 +2,78 @@
 
 // Function to delete student from the entire database
 async function deleteStudentPermanently(studentId, studentName) {
-    const confirmed = confirm(`CRITICAL: Are you sure you want to PERMANENTLY delete ${studentName}? This will remove their account and all enrollment history.`);
-    if (!confirmed) return;
+  const confirmed = confirm(`CRITICAL: Are you sure you want to PERMANENTLY delete ${studentName}? This will remove their account and all enrollment history.`);
+  if (!confirmed) return;
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/students/${studentId}`, {
-            method: 'DELETE',
-            credentials: 'include' //
-        });
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/students/${studentId}`, {
+      method: 'DELETE',
+      credentials: 'include' //
+    });
 
-        if (response.ok) {
-            showToast(`Student ${studentName} removed from database`, '🗑️');
-            
-            // Refresh whichever view the user is currently on
-            if (document.getElementById('modal-enroll')) {
-                const batchId = document.querySelector('[onclick*="enrollExistingStudent"]').getAttribute('onclick').split("'")[3];
-                openEnrollmentModal(batchId); 
-            } else {
-                renderAdminStudents();
-            }
-        } else {
-            throw new Error("Server failed to delete student");
-        }
-    } catch (err) {
-        showToast("Error: " + err.message, "❌");
+    if (response.ok) {
+      showToast(`Student ${studentName} removed from database`, '🗑️');
+
+      // Refresh whichever view the user is currently on
+      if (document.getElementById('modal-enroll')) {
+        const batchId = document.querySelector('[onclick*="enrollExistingStudent"]').getAttribute('onclick').split("'")[3];
+        openEnrollmentModal(batchId);
+      } else {
+        renderAdminStudents();
+      }
+    } else {
+      throw new Error("Server failed to delete student");
     }
+  } catch (err) {
+    showToast("Error: " + err.message, "❌");
+  }
 }
 async function toggleStudentActiveState(studentId, currentStatus) {
-    const action = currentStatus ? "deactivate" : "activate";
-    if (!confirm(`Are you sure you want to ${action} this account?`)) return;
+  const action = currentStatus ? "deactivate" : "activate";
+  if (!confirm(`Are you sure you want to ${action} this account?`)) return;
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/students/${studentId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ isActive: !currentStatus })
-        });
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/students/${studentId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ isActive: !currentStatus })
+    });
 
-        if (response.ok) {
-            showToast(`Account ${action}d`, '✅');
-            renderAdminStudents(); // Refresh the management table
-        }
-    } catch (err) {
-        showToast("Status update failed", "❌");
+    if (response.ok) {
+      showToast(`Account ${action}d`, '✅');
+      renderAdminStudents(); // Refresh the management table
     }
+  } catch (err) {
+    showToast("Status update failed", "❌");
+  }
 }
 async function submitCourseRequest(courseId, batchId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/requests`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ courseId, batchId })
-        });
+  try {
+    const response = await fetch(`${BACKEND_URL}/requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ courseId, batchId })
+    });
 
-        if (response.ok) {
-            showToast('Request sent to Admin! 🚀', '✅');
-            // Optionally refresh the current view to show "Pending" status
-        } else {
-            const err = await response.json();
-            throw new Error(err.message || "Submission failed");
-        }
-    } catch (e) {
-        showToast(e.message, '❌');
+    if (response.ok) {
+      showToast('Request sent to Admin! 🚀', '✅');
+      // Optionally refresh the current view to show "Pending" status
+    } else {
+      const err = await response.json();
+      throw new Error(err.message || "Submission failed");
     }
+  } catch (e) {
+    showToast(e.message, '❌');
+  }
 }
 
 async function getData(key) {
   if (USE_SERVER) {
     try {
-      const response = await fetch(`${BACKEND_URL}/admin/${key}`,{
-          credentials: 'include' 
+      const response = await fetch(`${BACKEND_URL}/admin/${key}`, {
+        credentials: 'include'
       });
       if (!response.ok) throw new Error('Server unreachable');
       return await response.json();
@@ -93,17 +93,17 @@ function showLoading() {
     </div>`;
 }
 function togglePinCourse(courseId) {
-    let pinned = ls('pinned_courses') || [];
-    if (pinned.includes(courseId)) {
-        pinned = pinned.filter(id => id !== courseId);
-    } else {
-        pinned.push(courseId);
-    }
-    ls('pinned_courses', pinned);
-    renderAdminCurriculum(); // Refresh UI
+  let pinned = ls('pinned_courses') || [];
+  if (pinned.includes(courseId)) {
+    pinned = pinned.filter(id => id !== courseId);
+  } else {
+    pinned.push(courseId);
+  }
+  ls('pinned_courses', pinned);
+  renderAdminCurriculum(); // Refresh UI
 }
 function openCreateCourseModal() {
-    const modalHtml = `
+  const modalHtml = `
         <div class="modal-overlay open" id="modal-create-course">
             <div class="modal">
                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
@@ -130,79 +130,79 @@ function openCreateCourseModal() {
                 <button class="btn btn-v btn-full" onclick="saveNewCourse()">Create Course Metadata →</button>
             </div>
         </div>`;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
 async function saveNewCourse() {
-    const payload = {
-        name: document.getElementById('new-c-name').value,
-        duration: document.getElementById('new-c-dur').value,
-        image: document.getElementById('new-c-img').value || "https://taleeo-assets.com/courses/default.jpg",
-        description: document.getElementById('new-c-desc').value,
-        // System fields will be handled by backend
-    };
+  const payload = {
+    name: document.getElementById('new-c-name').value,
+    duration: document.getElementById('new-c-dur').value,
+    image: document.getElementById('new-c-img').value || "https://taleeo-assets.com/courses/default.jpg",
+    description: document.getElementById('new-c-desc').value,
+    // System fields will be handled by backend
+  };
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/courses`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            showToast('Course Created! Now add modules.', '✅');
-            document.getElementById('modal-create-course').remove();
-            renderAdminCurriculum();
-        }
-    } catch (e) { showToast('Error creating course', '❌'); }
-}
-async function deleteCourse(courseId) {
-    if (!confirm("Are you sure you want to delete this course? This will hide it from the curriculum.")) return;
-
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/courses/${courseId}`, {
-            method: 'DELETE',
-            credentials: 'include' // Required for your session
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            showToast('Course deleted successfully', '🗑️');
-            renderAdminCurriculum(); // Refresh the list
-        } else {
-            throw new Error(result.message || "Failed to delete");
-        }
-    } catch (err) {
-        showToast('Error: ' + err.message, '❌');
-    }
-}
-async function renderAdminCurriculum(searchTerm = '') {
-    showLoading();
-    const mc = document.getElementById('main-content');
-    
-    // Fetch data using the optimized search endpoint
-    const data = await fetchApiData(`/admin/courses/search?q=${searchTerm}&limit=20`, () => {
-        // FALLBACK: Use local MODULES if server is offline
-        const localCourses = MODULES.map(m => ({
-            id: m.id.toString(),
-            name: m.title,
-            modules: m.topics.map(t => ({ title: t })),
-            batches: []
-        })).filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        
-        return { totalRecords: localCourses.length, courses: localCourses }; 
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/courses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
     });
 
-    const courses = data.courses || [];
-    const totalRecords = data.totalRecords || 0;
+    if (response.ok) {
+      showToast('Course Created! Now add modules.', '✅');
+      document.getElementById('modal-create-course').remove();
+      renderAdminCurriculum();
+    }
+  } catch (e) { showToast('Error creating course', '❌'); }
+}
+async function deleteCourse(courseId) {
+  if (!confirm("Are you sure you want to delete this course? This will hide it from the curriculum.")) return;
 
-    // Handle Pinning Logic
-    const pinnedIds = ls('pinned_courses') || [];
-    const pinnedCourses = courses.filter(c => pinnedIds.includes(c.id));
-    const otherCourses = courses.filter(c => !pinnedIds.includes(c.id));
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/courses/${courseId}`, {
+      method: 'DELETE',
+      credentials: 'include' // Required for your session
+    });
 
-    mc.innerHTML = `
+    const result = await response.json();
+    if (response.ok) {
+      showToast('Course deleted successfully', '🗑️');
+      renderAdminCurriculum(); // Refresh the list
+    } else {
+      throw new Error(result.message || "Failed to delete");
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, '❌');
+  }
+}
+async function renderAdminCurriculum(searchTerm = '') {
+  showLoading();
+  const mc = document.getElementById('main-content');
+
+  // Fetch data using the optimized search endpoint
+  const data = await fetchApiData(`/admin/courses/search?q=${searchTerm}&limit=20`, () => {
+    // FALLBACK: Use local MODULES if server is offline
+    const localCourses = MODULES.map(m => ({
+      id: m.id.toString(),
+      name: m.title,
+      modules: m.topics.map(t => ({ title: t })),
+      batches: []
+    })).filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    return { totalRecords: localCourses.length, courses: localCourses };
+  });
+
+  const courses = data.courses || [];
+  const totalRecords = data.totalRecords || 0;
+
+  // Handle Pinning Logic
+  const pinnedIds = ls('pinned_courses') || [];
+  const pinnedCourses = courses.filter(c => pinnedIds.includes(c.id));
+  const otherCourses = courses.filter(c => !pinnedIds.includes(c.id));
+
+  mc.innerHTML = `
         <div class="topbar">
             <div class="topbar-left">
                 <div class="topbar-title">Course Curriculum (${totalRecords})</div>
@@ -214,8 +214,8 @@ async function renderAdminCurriculum(searchTerm = '') {
                     <button class="btn btn-v btn-sm" 
                             onclick="renderAdminCurriculum(document.getElementById('curr-search-input').value)">🔍</button>
                 </div>
-                ${_currentUser.role === 'admin' ? 
-                    `<button class="btn btn-success btn-sm" onclick="openCreateCourseModal()">+ New Course</button>` : ''}
+                ${_currentUser.role === 'admin' ?
+      `<button class="btn btn-success btn-sm" onclick="openCreateCourseModal()">+ New Course</button>` : ''}
             </div>
         </div>
 
@@ -231,17 +231,17 @@ async function renderAdminCurriculum(searchTerm = '') {
 // Variable to store the currently loaded course for modal context
 let _activeCourseContext = null;
 async function renderCourseDeepDive(courseId) {
-    showLoading();
-    const mc = document.getElementById('main-content');
-    
-    const response = await apiGet(`/admin/courses/search?q=${courseId}`); 
-    const course = response.courses.find(c => c.id === courseId);
-    if (!course) return renderAdminCurriculum();
+  showLoading();
+  const mc = document.getElementById('main-content');
 
-    _activeCourseContext = course; 
-    saveNavState('course-detail', courseId);
+  const response = await apiGet(`/admin/courses/search?q=${courseId}`);
+  const course = response.courses.find(c => c.id === courseId);
+  if (!course) return renderAdminCurriculum();
 
-    mc.innerHTML = `
+  _activeCourseContext = course;
+  saveNavState('course-detail', courseId);
+
+  mc.innerHTML = `
         <div class="topbar">
             <div class="topbar-left">
                 <button class="btn btn-out btn-sm" onclick="renderAdminCurriculum()">← Back</button>
@@ -260,10 +260,10 @@ async function renderCourseDeepDive(courseId) {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:16px;">
                     ${course.batches?.map(b => {
-                        const daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
-                        const progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
-                        
-                        return `
+    const daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+    const progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+
+    return `
                         <div class="card anim-in" style="background: var(--bg2); border: 1px solid var(--border);">
                           <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
                             <div>
@@ -300,7 +300,7 @@ async function renderCourseDeepDive(courseId) {
                             <button class="btn btn-out btn-sm" onclick="openBatchModal('${b.id}', '${course.id}')">Edit</button>
                           </div>
                         </div>`;
-                    }).join('') || '<div class="card-sub">No batches for this course.</div>'}
+  }).join('') || '<div class="card-sub">No batches for this course.</div>'}
                 </div>
             </div>
 
@@ -312,7 +312,7 @@ async function renderCourseDeepDive(courseId) {
                     ${course.modules?.map((m, i) => `
                         <div class="syllabus-item expandable" id="mod-card-${m.id}">
                             <div class="syllabus-header" onclick="toggleModuleExpand('${m.id}')" style="cursor:pointer;">
-                                <span class="syllabus-index">Module 0${m.order || i+1}</span>
+                                <span class="syllabus-index">Module 0${m.order || i + 1}</span>
                                 <div style="display:flex; gap:8px;">
                                     <button class="btn btn-out btn-icon" onclick="event.stopPropagation(); openModuleModal('${m.id}')">✏️</button>
                                     <button class="btn btn-danger btn-icon" onclick="event.stopPropagation(); requestDeleteModule('${m.id}', '${course.id}')">🗑️</button>
@@ -343,14 +343,14 @@ async function renderCourseDeepDive(courseId) {
 }
 // Add this helper for filtering the list in real-time
 function filterEnrollmentList(term) {
-    const list = document.getElementById('enrollment-list');
-    const items = list.getElementsByClassName('enroll-item');
-    const lowTerm = term.toLowerCase();
+  const list = document.getElementById('enrollment-list');
+  const items = list.getElementsByClassName('enroll-item');
+  const lowTerm = term.toLowerCase();
 
-    for (let item of items) {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(lowTerm) ? 'flex' : 'none';
-    }
+  for (let item of items) {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(lowTerm) ? 'flex' : 'none';
+  }
 }
 
 async function openEnrollmentModal(batchId) {
@@ -385,7 +385,7 @@ async function openEnrollmentModal(batchId) {
   const existingModal = document.getElementById('modal-enroll');
   if (existingModal) existingModal.remove();
 
-    const modalHtml = `
+  const modalHtml = `
         <div class="modal-overlay open" id="modal-enroll">
             <div class="modal" style="max-width: 600px;">
                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
@@ -420,9 +420,9 @@ async function openEnrollmentModal(batchId) {
 
                 <div class="enrollment-scroll-container" id="enrollment-list">
                     ${students.map(s => {
-                    const sid = String(s.id || s._id || '');
-                    const isEnrolled = enrolledIds.has(sid);
-                        return `
+    const sid = String(s.id || s._id || '');
+    const isEnrolled = enrolledIds.has(sid);
+    return `
                         <div class="enroll-item anim-in">
                             <div class="enroll-info">
                                 <div class="enroll-name">${s.name} ${isEnrolled ? '<span class="badge badge-g">Enrolled</span>' : ''}</div>
@@ -437,218 +437,218 @@ async function openEnrollmentModal(batchId) {
                             </button>
                             
                         </div>`;
-                    }).join('')}
+  }).join('')}
                 </div>
             </div>
         </div>`;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-  async function addNewStudentFromEnrollment(batchId, batchName) {
-    const nameEl = document.getElementById('enroll-new-name');
-    const emailEl = document.getElementById('enroll-new-email');
-    const phoneEl = document.getElementById('enroll-new-phone');
+async function addNewStudentFromEnrollment(batchId, batchName) {
+  const nameEl = document.getElementById('enroll-new-name');
+  const emailEl = document.getElementById('enroll-new-email');
+  const phoneEl = document.getElementById('enroll-new-phone');
 
-    const name = (nameEl?.value || '').trim();
-    const email = (emailEl?.value || '').trim().toLowerCase();
-    const phone = (phoneEl?.value || '').trim().replace(/\D/g, '');
+  const name = (nameEl?.value || '').trim();
+  const email = (emailEl?.value || '').trim().toLowerCase();
+  const phone = (phoneEl?.value || '').trim().replace(/\D/g, '');
 
-    if (!name || !email) {
-      showToast('Enter name and email to add a new student.', '❌');
-      return;
-    }
-
-    const studentPayload = {
-      name: name,
-      email: email,
-      password: STUDENT_DEFAULT_PASSWORD,
-      role: 'student',
-      phone: phone || '',
-      firstLogin: false,
-      avatar: name[0].toUpperCase(),
-      enrolledBatches: batchId ? [batchId] : [],
-      isDeleted: false
-    };
-
-    try {
-      if (USE_SERVER) {
-        const response = await fetch(`${BACKEND_URL}/admin/students`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(studentPayload)
-        });
-
-        if (response.status === 409) {
-          showToast('Student already exists. Use search to enroll existing student.', '⚠️');
-          return;
-        }
-        if (!response.ok) throw new Error('Failed to create student');
-
-        const emailResult = await sendStudentInviteEmail({
-          name,
-          email,
-          phone,
-          password: STUDENT_DEFAULT_PASSWORD,
-          assignedBatchLabel: batchName || 'Selected Batch'
-        });
-
-        if (emailResult.ok) {
-          showToast(`Student added to ${batchName || 'batch'} and invite sent.`, '✅');
-        } else {
-          console.warn('Enrollment invite email failed for both templates.', emailResult);
-          showToast(`⚠️ Student added, but email was not sent to ${email}`, '⚠️');
-        }
-      } else {
-        handleStudentLocalSave(studentPayload, batchId);
-        showToast(`Student added to ${batchName || 'batch'} and invite sent.`, '✅');
-      }
-
-      if (nameEl) nameEl.value = '';
-      if (emailEl) emailEl.value = '';
-      if (phoneEl) phoneEl.value = '';
-      openEnrollmentModal(batchId);
-    } catch (error) {
-      console.warn('Enrollment create-student flow failed', error);
-      showToast(error.message || 'Could not add student.', '❌');
-    }
+  if (!name || !email) {
+    showToast('Enter name and email to add a new student.', '❌');
+    return;
   }
-async function removeStudentFromBatch(studentId, batchId) {
-    if (!confirm("Are you sure you want to un-enroll this student from this batch?")) return;
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/batches/unenroll/${studentId}`, {
-            method: 'PUT', // Using PUT for un-enrollment logic
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ batchId: batchId }) // Send the specific batch ID
-        });
+  const studentPayload = {
+    name: name,
+    email: email,
+    password: STUDENT_DEFAULT_PASSWORD,
+    role: 'student',
+    phone: phone || '',
+    firstLogin: false,
+    avatar: name[0].toUpperCase(),
+    enrolledBatches: batchId ? [batchId] : [],
+    isDeleted: false
+  };
 
-        if (response.ok) {
-            showToast('Student un-enrolled', '🗑️');
-            openEnrollmentModal(batchId); // Refresh modal
-        }
-    } catch (err) {
-        showToast('Error: ' + err.message, '❌');
+  try {
+    if (USE_SERVER) {
+      const response = await fetch(`${BACKEND_URL}/admin/students`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(studentPayload)
+      });
+
+      if (response.status === 409) {
+        showToast('Student already exists. Use search to enroll existing student.', '⚠️');
+        return;
+      }
+      if (!response.ok) throw new Error('Failed to create student');
+
+      const emailResult = await sendStudentInviteEmail({
+        name,
+        email,
+        phone,
+        password: STUDENT_DEFAULT_PASSWORD,
+        assignedBatchLabel: batchName || 'Selected Batch'
+      });
+
+      if (emailResult.ok) {
+        showToast(`Student added to ${batchName || 'batch'} and invite sent.`, '✅');
+      } else {
+        console.warn('Enrollment invite email failed for both templates.', emailResult);
+        showToast(`⚠️ Student added, but email was not sent to ${email}`, '⚠️');
+      }
+    } else {
+      handleStudentLocalSave(studentPayload, batchId);
+      showToast(`Student added to ${batchName || 'batch'} and invite sent.`, '✅');
     }
+
+    if (nameEl) nameEl.value = '';
+    if (emailEl) emailEl.value = '';
+    if (phoneEl) phoneEl.value = '';
+    openEnrollmentModal(batchId);
+  } catch (error) {
+    console.warn('Enrollment create-student flow failed', error);
+    showToast(error.message || 'Could not add student.', '❌');
+  }
+}
+async function removeStudentFromBatch(studentId, batchId) {
+  if (!confirm("Are you sure you want to un-enroll this student from this batch?")) return;
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/batches/unenroll/${studentId}`, {
+      method: 'PUT', // Using PUT for un-enrollment logic
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ batchId: batchId }) // Send the specific batch ID
+    });
+
+    if (response.ok) {
+      showToast('Student un-enrolled', '🗑️');
+      openEnrollmentModal(batchId); // Refresh modal
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, '❌');
+  }
 }
 // Add this helper for filtering the list in real-time
 function filterEnrollmentList(term) {
-    const list = document.getElementById('enrollment-list');
-    const items = list.getElementsByClassName('enroll-item');
-    const lowTerm = term.toLowerCase();
+  const list = document.getElementById('enrollment-list');
+  const items = list.getElementsByClassName('enroll-item');
+  const lowTerm = term.toLowerCase();
 
-    for (let item of items) {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(lowTerm) ? 'flex' : 'none';
-    }
+  for (let item of items) {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(lowTerm) ? 'flex' : 'none';
+  }
 }
 async function requestDeleteBatch(batchId) {
-    if (!confirm("Are you sure you want to deactivate this batch? Students will lose access.")) return;
+  if (!confirm("Are you sure you want to deactivate this batch? Students will lose access.")) return;
 
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/batches/${batchId}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        });
-        if (response.ok) {
-          console.log('Batch deactivated successfully');
-            showToast('Batch deactivated successfully', '🗑️');
-            renderCourseDeepDive(_activeCourseContext.id); // Refresh view
-        } else {
-          console.log('Batch deactivated faileed');
-            throw new Error("Failed to delete batch");
-        }
-    } catch (err) {
-        showToast('Error: ' + err.message, '❌');
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/batches/${batchId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    if (response.ok) {
+      console.log('Batch deactivated successfully');
+      showToast('Batch deactivated successfully', '🗑️');
+      renderCourseDeepDive(_activeCourseContext.id); // Refresh view
+    } else {
+      console.log('Batch deactivated faileed');
+      throw new Error("Failed to delete batch");
     }
+  } catch (err) {
+    showToast('Error: ' + err.message, '❌');
+  }
 }
 async function enrollExistingStudent(studentId, batchId) {
-    try {
-        const response = await fetch(`${BACKEND_URL}/admin/batches/${batchId}/enroll`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ studentId: studentId }) // Structured for controller
-        });
+  try {
+    const response = await fetch(`${BACKEND_URL}/admin/batches/${batchId}/enroll`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ studentId: studentId }) // Structured for controller
+    });
 
-        if (response.ok) {
-            showToast('Student added to batch!', '✅');
+    if (response.ok) {
+      showToast('Student added to batch!', '✅');
       openEnrollmentModal(batchId);
-        } else {
-            throw new Error("Enrollment failed");
-        }
-    } catch (e) {
-        showToast('Error: ' + e.message, '❌');
+    } else {
+      throw new Error("Enrollment failed");
     }
+  } catch (e) {
+    showToast('Error: ' + e.message, '❌');
+  }
 }
 async function saveBatchAction(batchId, courseId) {
-    const payload = {
-        name: document.getElementById('in-b-name').value,
-        type: document.getElementById('in-b-type').value,
-        start: document.getElementById('in-b-start').value,
-        end: document.getElementById('in-b-end').value,
-        timing: document.getElementById('in-b-timing').value,
-        courseId: courseId,
-        zoomDetails: {
-            link: document.getElementById('in-b-zoom').value,
-            id: document.getElementById('in-b-zoom-id')?.value || '',
-            pass: document.getElementById('in-b-zoom-pass')?.value || ''
-        },
-        active: true,
-        isDeleted: false
-    };
-     let res=null;
+  const payload = {
+    name: document.getElementById('in-b-name').value,
+    type: document.getElementById('in-b-type').value,
+    start: document.getElementById('in-b-start').value,
+    end: document.getElementById('in-b-end').value,
+    timing: document.getElementById('in-b-timing').value,
+    courseId: courseId,
+    zoomDetails: {
+      link: document.getElementById('in-b-zoom').value,
+      id: document.getElementById('in-b-zoom-id')?.value || '',
+      pass: document.getElementById('in-b-zoom-pass')?.value || ''
+    },
+    active: true,
+    isDeleted: false
+  };
+  let res = null;
 
-    const method = (batchId && batchId !== 'null') ? 'PUT' : 'POST';
-    const url = method === 'PUT' ? `/admin/batches/${batchId}` : `/admin/batches`;
+  const method = (batchId && batchId !== 'null') ? 'PUT' : 'POST';
+  const url = method === 'PUT' ? `/admin/batches/${batchId}` : `/admin/batches`;
 
-    try {
-         res = await apiWrite(url, method, payload); // Uses your common backend caller
-        showToast('Batch Saved Successfully', '✅');
-        document.getElementById('modal-manage-batch').remove();
+  try {
+    res = await apiWrite(url, method, payload); // Uses your common backend caller
+    showToast('Batch Saved Successfully', '✅');
+    document.getElementById('modal-manage-batch').remove();
 
-        renderAdminBatches(); // Refresh UI
-    } catch (e) {
-        showToast('Error saving batch: ' + e.message, '❌');
-    }
-    return res;
+    renderAdminBatches(); // Refresh UI
+  } catch (e) {
+    showToast('Error saving batch: ' + e.message, '❌');
+  }
+  return res;
 }
 async function requestDeleteModule(moduleId, courseId) {
-    if (!confirm("Are you sure you want to remove this module from the curriculum?")) return;
+  if (!confirm("Are you sure you want to remove this module from the curriculum?")) return;
 
-    try {
-        // Construct the URL matching your backend route
-        const response = await fetch(`${BACKEND_URL}/admin/modules/${moduleId}`, {
-            method: 'DELETE',
-            credentials: 'include' // Required for your session cookies
-        });
+  try {
+    // Construct the URL matching your backend route
+    const response = await fetch(`${BACKEND_URL}/admin/modules/${moduleId}`, {
+      method: 'DELETE',
+      credentials: 'include' // Required for your session cookies
+    });
 
-        if (response.ok) {
-            showToast('Module removed successfully', '🗑️');
-            renderCourseDeepDive(courseId); // Refresh the UI to reflect changes
-        } else {
-            throw new Error("Failed to delete");
-        }
-    } catch (err) {
-        showToast('Error deleting module', '❌');
-        console.error(err);
+    if (response.ok) {
+      showToast('Module removed successfully', '🗑️');
+      renderCourseDeepDive(courseId); // Refresh the UI to reflect changes
+    } else {
+      throw new Error("Failed to delete");
     }
+  } catch (err) {
+    showToast('Error deleting module', '❌');
+    console.error(err);
+  }
 }
 function toggleModuleExpand(id) {
-    const el = document.getElementById(`details-${id}`);
-    const isHidden = el.style.display === 'none';
-    el.style.display = isHidden ? 'block' : 'none';
+  const el = document.getElementById(`details-${id}`);
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? 'block' : 'none';
 }
 // Global state for simple editing
 let activeModuleId = null;
 
-function openModuleModal(moduleId = null,courseId) {
-    const isEdit = !!moduleId;
-    const m = isEdit ? _activeCourseContext.modules.find(mod => mod.id === moduleId) : {};
-    
-    // Build the Common Template
-    const modalHtml = `
+function openModuleModal(moduleId = null, courseId) {
+  const isEdit = !!moduleId;
+  const m = isEdit ? _activeCourseContext.modules.find(mod => mod.id === moduleId) : {};
+
+  // Build the Common Template
+  const modalHtml = `
         <div class="modal-overlay open" id="modal-manage-module">
             <div class="modal">
                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
@@ -686,61 +686,61 @@ function openModuleModal(moduleId = null,courseId) {
                 </button>
             </div>
         </div>`;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 async function saveModuleAction(existingId) {
-    const payload = {
-        title: document.getElementById('in-mod-title').value,
-        order: parseInt(document.getElementById('in-mod-order').value),
-        topics: document.getElementById('in-mod-topics').value.split('\n').filter(x => x.trim()),
-        bonus: document.getElementById('in-mod-bonus').value.split('\n').filter(x => x.trim()),
-        courseId: _activeCourseContext.id
-    };
+  const payload = {
+    title: document.getElementById('in-mod-title').value,
+    order: parseInt(document.getElementById('in-mod-order').value),
+    topics: document.getElementById('in-mod-topics').value.split('\n').filter(x => x.trim()),
+    bonus: document.getElementById('in-mod-bonus').value.split('\n').filter(x => x.trim()),
+    courseId: _activeCourseContext.id
+  };
 
-    const method = existingId !== "null" && existingId ? 'PUT' : 'POST';
-    const endpoint = method === 'PUT' ? `/admin/modules/${existingId}` : `/admin/modules`;
+  const method = existingId !== "null" && existingId ? 'PUT' : 'POST';
+  const endpoint = method === 'PUT' ? `/admin/modules/${existingId}` : `/admin/modules`;
 
-    try {
-      console.log(method," ",endpoint, payload)
-        await apiWrite(endpoint, method, payload); // Common API wrapper
-        showToast('Module content saved!', '✅');
-        document.getElementById('modal-manage-module').remove();
-        renderCourseDeepDive(_activeCourseContext.id); // Refresh view
-    } catch (e) {
-        showToast('Save failed', '❌');
-    }
+  try {
+    console.log(method, " ", endpoint, payload)
+    await apiWrite(endpoint, method, payload); // Common API wrapper
+    showToast('Module content saved!', '✅');
+    document.getElementById('modal-manage-module').remove();
+    renderCourseDeepDive(_activeCourseContext.id); // Refresh view
+  } catch (e) {
+    showToast('Save failed', '❌');
+  }
 }
 
 async function apiWrite(endpoint, method = 'POST', payload = {}) {
-    try {
-        const response = await fetch(`${BACKEND_URL}${endpoint}`, {
-            method: method,
-            credentials: 'include', // CRITICAL: Sends session info
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+  try {
+    const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+      method: method,
+      credentials: 'include', // CRITICAL: Sends session info
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-        if (response.status === 401) {
-            auth.doLogout();
-            throw new Error("Unauthorized access.");
-        }
-
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.message || "Save Failed");
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error(`${method} Error [${endpoint}]:`, error);
-        throw error;
+    if (response.status === 401) {
+      auth.doLogout();
+      throw new Error("Unauthorized access.");
     }
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.message || "Save Failed");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(`${method} Error [${endpoint}]:`, error);
+    throw error;
+  }
 }
 
 // function openModuleModal(moduleId = null, courseId) {
 //   activeModuleId = moduleId;
 //   const isEdit = !!moduleId;
-  
+
 //   // Create a dynamic modal for modules
 //   const modalHtml = `
 //     <div class="modal-overlay open" id="modal-manage-module">
@@ -768,10 +768,10 @@ async function saveModule(courseId) {
   try {
     const method = activeModuleId ? 'PUT' : 'POST';
     const endpoint = activeModuleId ? `/admin/modules/${activeModuleId}` : `/admin/modules`;
-    
+
     // Call common apiWrite helper
     await apiWrite(endpoint, method, payload);
-    
+
     showToast('Module saved successfully!', '✅');
     document.getElementById('modal-manage-module').remove();
     renderCourseDeepDive(courseId); // Refresh details
@@ -781,11 +781,11 @@ async function saveModule(courseId) {
 }
 
 function renderCourseCard(course, isPinned) {
-    const isAdmin = _currentUser.role === 'admin';
-    const modCount = course.modules ? course.modules.length : 0;
-    const batchCount = course.batches ? course.batches.length : 0;
-    
-    return `
+  const isAdmin = _currentUser.role === 'admin';
+  const modCount = course.modules ? course.modules.length : 0;
+  const batchCount = course.batches ? course.batches.length : 0;
+
+  return `
     <div class="module-card anim-in">
       <div class="mc-top">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -814,7 +814,7 @@ async function postData(key, payload) {
       const response = await fetch(`${BACKEND_URL}/admin/${key}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', 
+        credentials: 'include',
 
         body: JSON.stringify(payload)
       });
@@ -886,16 +886,16 @@ async function renderAdminDashboard() {
           
           <div style="max-height: 320px; overflow-y: auto; padding-right: 5px;">
             ${data.activeBatches.map(b => {
-              let daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
-              let progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
-              return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
+      let daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+      let progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+      return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                   <div><div style="font-size:.85rem;font-weight:600;color:white;">${b.name}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${b.timing} · ${b.students ? b.students.length : 0} students</div></div>
                   <span class="badge ${b.active && daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
                 </div>
                 <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
               </div>`;
-            }).join('')}
+    }).join('')}
           </div>
         </div>
         
@@ -905,11 +905,11 @@ async function renderAdminDashboard() {
           <div style="max-height: 320px; overflow-y: auto; padding-right: 5px;">
             ${data.recentStudents.length === 0 ? '<p style="font-size:.8rem;color:var(--muted);padding:16px 0;text-align:center;">No students yet.</p>' : ''}
             ${data.recentStudents.map(s => {
-              return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
                 <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;flex-shrink:0;">${s.name[0]}</div>
                 <div style="flex:1;"><div style="font-size:.83rem;font-weight:600;color:white;">${s.name}</div><div style="font-size:.7rem;color:var(--muted);">${s.email}</div></div>
               </div>`;
-            }).join('')}
+    }).join('')}
           </div>
         </div>
 
@@ -936,28 +936,28 @@ async function renderAdminDashboard() {
         <div class="card anim-in">
           <div class="card-header"><div class="card-title">Active Batches</div><button class="btn btn-v btn-sm" onclick="openBatchModal()">+ New Batch</button></div>
           ${batches.map(function (b) {
-            var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
-            var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
-            return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
+      var daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+      var progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+      return `<div style="padding:14px 0;border-bottom:1px solid var(--border);">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
                 <div><div style="font-size:.85rem;font-weight:600;color:white;">${b.name}</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${b.timing} · ${b.students.length} students</div></div>
                 <span class="badge ${b.active && daysLeft > 0 ? 'badge-g' : 'badge-r'}">${daysLeft > 0 ? daysLeft + 'd left' : 'Ended'}</span>
               </div>
               <div class="progress-wrap"><div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,var(--v1),var(--b1));"></div></div>
             </div>`;
-          }).join('')}
+    }).join('')}
         </div>
         <div class="card anim-in" style="animation-delay:.1s">
           <div class="card-header"><div class="card-title">Recent Students</div><button class="btn btn-v btn-sm" onclick="openModal('modal-add-student')">+ Invite</button></div>
           ${students.length === 0 ? '<p style="font-size:.8rem;color:var(--muted);padding:16px 0;text-align:center;">No students yet. Invite your first student!</p>' : ''}
           ${students.slice(0, 5).map(function (s) {
-            var batch = batches.find(function (b) { return b.students.includes(s.id); }) || {};
-            return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      var batch = batches.find(function (b) { return b.students.includes(s.id); }) || {};
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
               <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:white;flex-shrink:0;">${s.name[0]}</div>
               <div style="flex:1;"><div style="font-size:.83rem;font-weight:600;color:white;">${s.name}</div><div style="font-size:.7rem;color:var(--muted);">${s.email}</div></div>
               <span class="badge badge-v">${batch.name ? batch.name.split(' ')[0] + ' ' + batch.name.split(' ')[1] : 'No Batch'}</span>
             </div>`;
-          }).join('')}
+    }).join('')}
         </div>
       </div>
 
@@ -968,15 +968,15 @@ let _allBatches = []; // 🌟 Add this global state
 
 // Updated Batch Rendering to populate the global state
 async function renderAdminBatches() {
-    showLoading();
-    const mc = document.getElementById('main-content');
+  showLoading();
+  const mc = document.getElementById('main-content');
 
-    const batches = await apiGet('/admin/batches') || ls('batches') || [];
-    const students = await apiGet('/admin/students?limit=500') || (ls('users') || []);
-    
-    _allBatches = batches; // 🌟 Save to global context for the modal
+  const batches = await apiGet('/admin/batches') || ls('batches') || [];
+  const students = await apiGet('/admin/students?limit=500') || (ls('users') || []);
 
-    mc.innerHTML = `
+  _allBatches = batches; // 🌟 Save to global context for the modal
+
+  mc.innerHTML = `
         <div class="topbar">
             <div class="topbar-left"><div class="topbar-title">Batch Management</div></div>
             <div class="topbar-right">
@@ -989,11 +989,11 @@ async function renderAdminBatches() {
     `;
 }
 function renderBatchComponent(b, allStudents) {
-    const enrolled = allStudents.filter(s => b.students?.includes(s.id));
-    const daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
-    const progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
+  const enrolled = allStudents.filter(s => b.students?.includes(s.id));
+  const daysLeft = Math.max(0, Math.ceil((new Date(b.end) - new Date()) / 86400000));
+  const progress = Math.min(100, Math.max(0, Math.round((new Date() - new Date(b.start)) / (new Date(b.end) - new Date(b.start)) * 100)));
 
-    return `
+  return `
     <div class="card anim-in" style="background: var(--bg2); border: 1px solid var(--border);">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
             <div>
@@ -1026,51 +1026,51 @@ function renderBatchComponent(b, allStudents) {
 
 // 🌟 Load courses from dropdown endpoint
 async function loadCourseDropdown() {
-    try {
-        // apiGet already returns parsed JSON data, not a Response object
-        const data = await apiGet('/admin/dropdowns?item=courses');
-        
-        if (data && data.items && Array.isArray(data.items)) {
-            // Cache successfully loaded courses to localStorage
-            ls('cached_courses', data.items);
-            return data.items;
-        } else {
-            throw new Error('Invalid response format from courses endpoint');
-        }
-    } catch (err) {
-        console.error('Failed to load courses from API:', err);
-        
-        // Fallback: Try to use cached courses from localStorage
-        const cachedCourses = ls('cached_courses');
-        if (cachedCourses && Array.isArray(cachedCourses) && cachedCourses.length > 0) {
-            console.warn('Using cached courses from localStorage');
-            return cachedCourses;
-        }
-        
-        console.error('No cached courses available');
-        return [];
+  try {
+    // apiGet already returns parsed JSON data, not a Response object
+    const data = await apiGet('/admin/dropdowns?item=courses');
+
+    if (data && data.items && Array.isArray(data.items)) {
+      // Cache successfully loaded courses to localStorage
+      ls('cached_courses', data.items);
+      return data.items;
+    } else {
+      throw new Error('Invalid response format from courses endpoint');
     }
+  } catch (err) {
+    console.error('Failed to load courses from API:', err);
+
+    // Fallback: Try to use cached courses from localStorage
+    const cachedCourses = ls('cached_courses');
+    if (cachedCourses && Array.isArray(cachedCourses) && cachedCourses.length > 0) {
+      console.warn('Using cached courses from localStorage');
+      return cachedCourses;
+    }
+
+    console.error('No cached courses available');
+    return [];
+  }
 }
 
 // 🌟 UPDATED: Batch Modal with mandatory course selection
 async function openBatchModal(batchId = null, courseId = null) {
-    const isEdit = !!batchId;
-    let b = {};
+  const isEdit = !!batchId;
+  let b = {};
 
-    if (isEdit) {
-        // Look in active course first, then global batches
-        const source = _activeCourseContext?.batches || _allBatches;
-        b = source.find(x => x.id === batchId) || {};
-    }
+  if (isEdit) {
+    // Look in active course first, then global batches
+    const source = _activeCourseContext?.batches || _allBatches;
+    b = source.find(x => x.id === batchId) || {};
+  }
 
-    // If editing, use existing courseId; otherwise fetch courses and force selection
-    let courseSelectionHtml = '';
-    let formattedCourseId = courseId || b.courseId;
+  // If editing, use existing courseId; otherwise fetch courses and force selection
+  let courseSelectionHtml = '';
+  let formattedCourseId = courseId || b.courseId;
 
-    if (!isEdit && !formattedCourseId) {
-        // Show loading state initially
-        const courses = await loadCourseDropdown();
-        courseSelectionHtml = `
+  if (!isEdit && !formattedCourseId) {
+    // Show loading state initially
+    const courses = await loadCourseDropdown();
+    courseSelectionHtml = `
             <div class="form-group" style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
                 <label class="form-label" style="color: var(--v2); font-weight: 700;">Select Course *</label>
                 <select class="form-input" id="in-b-course-select" onchange="updateBatchCourseId(this.value)" style="border: 2px solid var(--v2);">
@@ -1079,9 +1079,9 @@ async function openBatchModal(batchId = null, courseId = null) {
                 </select>
                 <small style="color: var(--muted); font-size: 0.75rem;">Cannot create batch without selecting a course</small>
             </div>`;
-    }
+  }
 
-    const modalHtml = `
+  const modalHtml = `
         <div class="modal-overlay open" id="modal-manage-batch">
             <div class="modal">
                 <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
@@ -1100,9 +1100,11 @@ async function openBatchModal(batchId = null, courseId = null) {
                             <option value="weekday" ${b.type === 'weekday' ? 'selected' : ''}>Weekday</option>
                         </select>
                     </div>
+                    <!--
                     <div class="form-group"><label class="form-label">Timing</label>
                         <input class="form-input" id="in-b-timing" value="${b.timing || ''}">
                     </div>
+                    -->
                 </div>
                 <div class="grid-2">
                     <div class="form-group"><label class="form-label">Start Date</label>
@@ -1129,29 +1131,29 @@ async function openBatchModal(batchId = null, courseId = null) {
                 </button>
             </div>
         </div>`;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    // Initialize button state AFTER modal is inserted into DOM
-    setTimeout(() => {
-        const saveBtn = document.getElementById('save-batch-btn');
-        if (saveBtn) {
-            if (!isEdit && !formattedCourseId) {
-                // Disable button for new batch without courseId
-                saveBtn.disabled = true;
-                saveBtn.style.opacity = '0.5';
-                saveBtn.style.cursor = 'not-allowed';
-                saveBtn.style.pointerEvents = 'none';
-                console.log('✓ Button initialized as DISABLED (waiting for course selection)');
-            } else {
-                // Enable button for editing or when courseId is provided
-                saveBtn.disabled = false;
-                saveBtn.style.opacity = '1';
-                saveBtn.style.cursor = 'pointer';
-                saveBtn.style.pointerEvents = 'auto';
-                console.log('✓ Button initialized as ENABLED');
-            }
-        }
-    }, 0);
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Initialize button state AFTER modal is inserted into DOM
+  setTimeout(() => {
+    const saveBtn = document.getElementById('save-batch-btn');
+    if (saveBtn) {
+      if (!isEdit && !formattedCourseId) {
+        // Disable button for new batch without courseId
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+        saveBtn.style.cursor = 'not-allowed';
+        saveBtn.style.pointerEvents = 'none';
+        console.log('✓ Button initialized as DISABLED (waiting for course selection)');
+      } else {
+        // Enable button for editing or when courseId is provided
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+        saveBtn.style.cursor = 'pointer';
+        saveBtn.style.pointerEvents = 'auto';
+        console.log('✓ Button initialized as ENABLED');
+      }
+    }
+  }, 0);
 }
 
 // 🌟 Global storage for selected batch courseId
@@ -1159,108 +1161,108 @@ let _selectedBatchCourseId = null;
 
 // 🌟 Handler for save batch button - gets courseId from multiple sources
 async function handleSaveBatch() {
-    const saveBtn = document.getElementById('save-batch-btn');
-    if (!saveBtn) {
-        console.error('❌ Save button not found');
-        return;
+  const saveBtn = document.getElementById('save-batch-btn');
+  if (!saveBtn) {
+    console.error('❌ Save button not found');
+    return;
+  }
+
+  // Get courseId from: 1) global, 2) select element, 3) data attribute
+  let courseId = _selectedBatchCourseId;
+  console.log('🔄 handleSaveBatch - Global courseId:', courseId);
+
+  if (!courseId) {
+    const courseSelect = document.getElementById('in-b-course-select');
+    if (courseSelect) {
+      courseId = courseSelect.value;
+      console.log('🔄 handleSaveBatch - From select dropdown:', courseId);
     }
-    
-    // Get courseId from: 1) global, 2) select element, 3) data attribute
-    let courseId = _selectedBatchCourseId;
-    console.log('🔄 handleSaveBatch - Global courseId:', courseId);
-    
-    if (!courseId) {
-        const courseSelect = document.getElementById('in-b-course-select');
-        if (courseSelect) {
-            courseId = courseSelect.value;
-            console.log('🔄 handleSaveBatch - From select dropdown:', courseId);
-        }
-    }
-    
-    if (!courseId) {
-        courseId = saveBtn.getAttribute('data-course-id') || '';
-        console.log('🔄 handleSaveBatch - From data attribute:', courseId);
-    }
-    
-    const batchId = saveBtn.getAttribute('data-batch-id') || '';
-    
-    if (!courseId) {
-        alert('⚠️ Please select a course first');
-        console.warn('❌ No courseId - batch creation blocked');
-        return;
-    }
-    
-    console.log('✅ handleSaveBatch - Proceeding with courseId:', courseId, 'batchId:', batchId);
-    // Call the original save function
-    let res = await saveBatchAction(batchId, courseId);
-    console.log('Batch save action result:', res);
-    debugger;
-    await linkBatchToCourse(res.batch.id, courseId);
+  }
+
+  if (!courseId) {
+    courseId = saveBtn.getAttribute('data-course-id') || '';
+    console.log('🔄 handleSaveBatch - From data attribute:', courseId);
+  }
+
+  const batchId = saveBtn.getAttribute('data-batch-id') || '';
+
+  if (!courseId) {
+    alert('⚠️ Please select a course first');
+    console.warn('❌ No courseId - batch creation blocked');
+    return;
+  }
+
+  console.log('✅ handleSaveBatch - Proceeding with courseId:', courseId, 'batchId:', batchId);
+  // Call the original save function
+  let res = await saveBatchAction(batchId, courseId);
+  console.log('Batch save action result:', res);
+  debugger;
+  await linkBatchToCourse(res.batch.id, courseId);
 }
 async function linkBatchToCourse(batchId, courseId) {
-    try {
-        // const response = await apiGet(`/admin/batches/${batchId}`, false);
-        const batchData = {  courseId };
-        
-        await fetch(`${BACKEND_URL}/admin/batches/${batchId}`, {
-            method: 'PUT',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(batchData)
-        });
-        
-        console.log('✅ Batch linked to course');
-    } catch (err) {
-        console.error('❌ Link failed:', err);
-    }
+  try {
+    // const response = await apiGet(`/admin/batches/${batchId}`, false);
+    const batchData = { courseId };
+
+    await fetch(`${BACKEND_URL}/admin/batches/${batchId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(batchData)
+    });
+
+    console.log('✅ Batch linked to course');
+  } catch (err) {
+    console.error('❌ Link failed:', err);
+  }
 }
 
 // 🌟 Helper: Update courseId when selection changes (with robust element finding)
 function updateBatchCourseId(courseId) {
-    console.log('🔄 updateBatchCourseId called with:', courseId);
-    
-    // Store the courseId globally for later use
-    _selectedBatchCourseId = courseId;
-    
-    // Use direct getElementById for more reliable element finding
-    const courseSpan = document.getElementById('modal-course-id');
-    const saveBtn = document.getElementById('save-batch-btn');
-    
-    // Safety check: ensure elements exist
-    if (!courseSpan || !saveBtn) {
-        console.warn('⚠️ Modal elements not ready yet', { courseSpan: !!courseSpan, saveBtn: !!saveBtn });
-        // Retry after a short delay
-        setTimeout(() => updateBatchCourseId(courseId), 100);
-        return;
-    }
-    
-    console.log('✓ Both elements found, updating UI');
-    
-    if (courseId) {
-        courseSpan.textContent = courseId;
-        courseSpan.style.color = 'var(--g1)';
-        
-        // Enable button
-        saveBtn.disabled = false;
-        saveBtn.style.opacity = '1';
-        saveBtn.style.cursor = 'pointer';
-        saveBtn.style.pointerEvents = 'auto';
-        saveBtn.setAttribute('data-course-id', courseId);
-        
-        console.log('✅ Button ENABLED for courseId:', courseId);
-    } else {
-        courseSpan.textContent = '⚠️ Required';
-        courseSpan.style.color = 'var(--r1)';
-        
-        // Disable button
-        saveBtn.disabled = true;
-        saveBtn.style.opacity = '0.5';
-        saveBtn.style.cursor = 'not-allowed';
-        saveBtn.style.pointerEvents = 'none';
-        saveBtn.setAttribute('data-course-id', '');
-        
-        console.log('❌ Button DISABLED - no courseId selected');
-    }
+  console.log('🔄 updateBatchCourseId called with:', courseId);
+
+  // Store the courseId globally for later use
+  _selectedBatchCourseId = courseId;
+
+  // Use direct getElementById for more reliable element finding
+  const courseSpan = document.getElementById('modal-course-id');
+  const saveBtn = document.getElementById('save-batch-btn');
+
+  // Safety check: ensure elements exist
+  if (!courseSpan || !saveBtn) {
+    console.warn('⚠️ Modal elements not ready yet', { courseSpan: !!courseSpan, saveBtn: !!saveBtn });
+    // Retry after a short delay
+    setTimeout(() => updateBatchCourseId(courseId), 100);
+    return;
+  }
+
+  console.log('✓ Both elements found, updating UI');
+
+  if (courseId) {
+    courseSpan.textContent = courseId;
+    courseSpan.style.color = 'var(--g1)';
+
+    // Enable button
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = '1';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.style.pointerEvents = 'auto';
+    saveBtn.setAttribute('data-course-id', courseId);
+
+    console.log('✅ Button ENABLED for courseId:', courseId);
+  } else {
+    courseSpan.textContent = '⚠️ Required';
+    courseSpan.style.color = 'var(--r1)';
+
+    // Disable button
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = '0.5';
+    saveBtn.style.cursor = 'not-allowed';
+    saveBtn.style.pointerEvents = 'none';
+    saveBtn.setAttribute('data-course-id', '');
+
+    console.log('❌ Button DISABLED - no courseId selected');
+  }
 }
 async function renderAdminStudents() {
   var mc = document.getElementById('main-content');
@@ -1272,14 +1274,14 @@ async function renderAdminStudents() {
   if (USE_SERVER) {
     try {
       const response = await fetch(`${BACKEND_URL}/admin/students`, {
-            credentials: 'include' // <--- ADD THIS LINE
-        });
+        credentials: 'include' // <--- ADD THIS LINE
+      });
       if (!response.ok) throw new Error('API failed to load students');
       students = await response.json();
 
       try {
         const batchRes = await fetch(`${BACKEND_URL}/admin/batches`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (batchRes.ok) batches = await batchRes.json();
         else batches = ls('batches') || [];
@@ -1308,8 +1310,8 @@ async function renderAdminStudents() {
         <thead><tr><th>Student</th><th>Email</th><th>Phone</th><th>Batch</th><th>Password</th><th>Status</th><th>Actions</th></tr></thead>
         <tbody>
           ${students.map(function (s) {
-            var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
-            return `<tr>
+    var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
+    return `<tr>
               <td><div style="display:flex;align-items:center;gap:9px;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">${s.name[0]}</div><span style="font-weight:600;">${s.name}</span></div></td>
               <td style="color:var(--muted);">${s.email}</td>
               <td style="color:var(--muted);">${s.phone || '—'}</td>
@@ -1324,7 +1326,7 @@ async function renderAdminStudents() {
     </button>
 </td>
             </tr>`;
-          }).join('')}
+  }).join('')}
         </tbody>
       </table>
       </div>
@@ -1340,8 +1342,8 @@ async function renderAdminDocuments() {
   if (USE_SERVER) {
     try {
       const response = await fetch(`${BACKEND_URL}/admin/documents`, {
-            credentials: 'include' // <--- ADD THIS LINE
-        });
+        credentials: 'include' // <--- ADD THIS LINE
+      });
       if (!response.ok) throw new Error('API failed to load documents');
       docs = await response.json();
     } catch (error) {
@@ -1356,9 +1358,9 @@ async function renderAdminDocuments() {
     <div class="topbar"><div class="topbar-left"><div class="topbar-title">Documents & Notes</div></div><div class="topbar-right"><button class="btn btn-v btn-sm" onclick="openModal('modal-upload-doc')">+ Upload Document</button></div></div>
     <div class="grid-auto">
       ${docs.map(function (d) {
-        var icons = { pdf: '📄', template: '📋', assignment: '📝', reference: '📖', recording: '🎥' };
-        var colors = { pdf: 'badge-v', template: 'badge-b', assignment: 'badge-a', reference: 'badge-c', recording: 'badge-g' };
-        return `<div class="card anim-in" style="position:relative;">
+    var icons = { pdf: '📄', template: '📋', assignment: '📝', reference: '📖', recording: '🎥' };
+    var colors = { pdf: 'badge-v', template: 'badge-b', assignment: 'badge-a', reference: 'badge-c', recording: 'badge-g' };
+    return `<div class="card anim-in" style="position:relative;">
           <div style="font-size:2rem;margin-bottom:10px;">${icons[d.type] || '📄'}</div>
           <div style="font-size:.88rem;font-weight:700;color:white;margin-bottom:5px;">${d.title}</div>
           <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${d.module}</div>
@@ -1375,7 +1377,7 @@ async function renderAdminDocuments() {
             <button class="btn btn-danger btn-sm" onclick="deleteDoc('${d.id}')">Delete</button>
           </div>
         </div>`;
-      }).join('')}
+  }).join('')}
       <div class="card anim-in" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;min-height:160px;" onclick="openModal('modal-upload-doc')">
         <div style="font-size:2rem;">➕</div>
         <div style="font-size:.82rem;color:var(--muted);">Upload Document</div>
@@ -1394,14 +1396,14 @@ async function renderAdminRecordings() {
   if (USE_SERVER) {
     try {
       const response = await fetch(`${BACKEND_URL}/admin/recordings`, {
-            credentials: 'include' // <--- ADD THIS LINE
-        });
+        credentials: 'include' // <--- ADD THIS LINE
+      });
       if (!response.ok) throw new Error('API failed to load recordings');
       recs = await response.json();
 
       try {
         const batchRes = await fetch(`${BACKEND_URL}/admin/batches`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (batchRes.ok) batches = await batchRes.json();
         else batches = ls('batches') || [];
@@ -1423,8 +1425,8 @@ async function renderAdminRecordings() {
     <div style="display:flex;flex-direction:column;gap:12px;">
       ${recs.length === 0 ? '<p style="text-align:center;color:var(--muted);padding:20px;">No recordings uploaded yet.</p>' : ''}
       ${recs.map(function (r, i) {
-        var batch = batches.find(function (b) { return b.id === r.batch; }) || { name: 'All Batches' };
-        return `<div class="card anim-in" style="animation-delay:${i * 0.06}s;">
+    var batch = batches.find(function (b) { return b.id === r.batch; }) || { name: 'All Batches' };
+    return `<div class="card anim-in" style="animation-delay:${i * 0.06}s;">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
             <div style="display:flex;align-items:center;gap:14px;">
               <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(239,68,68,.1));border:1px solid rgba(239,68,68,.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🎥</div>
@@ -1446,7 +1448,7 @@ async function renderAdminRecordings() {
             </div>
           </div>
         </div> `;
-      }).join('')}
+  }).join('')}
     </div>
   `;
 }
@@ -1463,7 +1465,7 @@ async function renderAdminAttendance() {
     try {
       try {
         const stuRes = await fetch(`${BACKEND_URL}/admin/students`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (stuRes.ok) students = await stuRes.json();
         else students = (ls('users') || []).filter(u => u.role === 'student');
@@ -1471,7 +1473,7 @@ async function renderAdminAttendance() {
 
       try {
         const batchRes = await fetch(`${BACKEND_URL}/admin/batches`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (batchRes.ok) batches = await batchRes.json();
         else batches = ls('batches') || [];
@@ -1479,7 +1481,7 @@ async function renderAdminAttendance() {
 
       try {
         const attRes = await fetch(`${BACKEND_URL}/admin/attendance`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (attRes.ok) attendance = await attRes.json();
         else attendance = ls('attendance') || {};
@@ -1515,14 +1517,14 @@ async function renderAdminAttendance() {
         <thead><tr><th>Student</th><th>Batch</th><th>Present</th><th>Total Sessions</th><th>Attendance %</th><th>Status</th></tr></thead>
         <tbody>
           ${students.map(function (s) {
-        var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
-        var att = attendance[s.id] || {};
-        var totalDays = Object.keys(att).length || 0;
-        var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length || 0;
-        var totalSessions = Math.max(totalDays, 10);
-        var pct = totalSessions > 0 ? Math.round(presentDays / totalSessions * 100) : 0;
+    var batch = batches.find(function (b) { return b.students && b.students.includes(s.id); }) || null;
+    var att = attendance[s.id] || {};
+    var totalDays = Object.keys(att).length || 0;
+    var presentDays = Object.values(att).filter(function (v) { return v === 'present'; }).length || 0;
+    var totalSessions = Math.max(totalDays, 10);
+    var pct = totalSessions > 0 ? Math.round(presentDays / totalSessions * 100) : 0;
 
-        return `<tr>
+    return `<tr>
               <td style="font-weight:600;">${s.name}</td>
               <td>${batch ? '<span class="badge badge-v">' + batch.name.substring(0, 16) + '...</span>' : '—'}</td>
               <td style="color:#6ee7b7;">${presentDays}</td>
@@ -1535,7 +1537,7 @@ async function renderAdminAttendance() {
               </td>
               <td><span class="badge ${pct >= 75 ? 'badge-g' : pct >= 50 ? 'badge-a' : 'badge-r'}">${pct >= 75 ? 'Good' : pct >= 50 ? 'Average' : 'Low'}</span></td>
             </tr>`;
-      }).join('')}
+  }).join('')}
         </tbody>
       </table>
       </div>
@@ -1554,7 +1556,7 @@ async function renderAdminCertificates() {
     try {
       try {
         const stuRes = await fetch(`${BACKEND_URL}/admin/students`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (stuRes.ok) students = await stuRes.json();
         else students = (ls('users') || []).filter(u => u.role === 'student');
@@ -1564,7 +1566,7 @@ async function renderAdminCertificates() {
 
       try {
         const batchRes = await fetch(`${BACKEND_URL}/admin/batches`, {
-            credentials: 'include' // <--- ADD THIS LINE
+          credentials: 'include' // <--- ADD THIS LINE
         });
         if (batchRes.ok) batches = await batchRes.json();
         else batches = ls('batches') || [];
@@ -1881,8 +1883,8 @@ function openInviteForBatch(batchId) {
   }, 50);
 }
 function renderBatchCard(b) {
-    const isAdmin = isAdminRole(_currentUser.role);
-    return `
+  const isAdmin = isAdminRole(_currentUser.role);
+  return `
     <div class="card anim-in">
         <div class="card-header">
             <div class="card-title">${b.name}</div>
@@ -1975,9 +1977,9 @@ async function inviteStudent() {
   const phone = document.getElementById('new-student-phone').value.trim().replace(/\D/g, '');
   const batchId = document.getElementById('new-student-batch').value;
 
-  if (!name || !email) { 
-    showToast('Please enter name and email.', '❌'); 
-    return; 
+  if (!name || !email) {
+    showToast('Please enter name and email.', '❌');
+    return;
   }
 
   // Define student payload
@@ -1990,7 +1992,7 @@ async function inviteStudent() {
     firstLogin: false,
     avatar: name[0].toUpperCase(),
     enrolledBatches: batchId ? [batchId] : [],
-    isDeleted:false
+    isDeleted: false
   };
 
   if (USE_SERVER) {
@@ -1999,7 +2001,7 @@ async function inviteStudent() {
       const response = await fetch(`${BACKEND_URL}/admin/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', 
+        credentials: 'include',
         body: JSON.stringify(studentPayload)
       });
 
@@ -2165,7 +2167,7 @@ async function uploadDocument() {
       const response = await fetch(`${BACKEND_URL}/admin/documents${isEdit ? '/' + encodeURIComponent(editingDocumentId) : ''}`, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include' ,// <--- ADD THIS LINE
+        credentials: 'include',// <--- ADD THIS LINE
         body: JSON.stringify(docPayload)
       });
       if (!response.ok) throw new Error('Server failed to save document');
@@ -2274,7 +2276,7 @@ async function addRecording() {
       const response = await fetch(`${BACKEND_URL}/admin/recordings${isEdit ? '/' + encodeURIComponent(editingRecordingId) : ''}`, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include' ,// <--- ADD THIS LINE
+        credentials: 'include',// <--- ADD THIS LINE
         body: JSON.stringify(recPayload)
       });
       if (!response.ok) throw new Error('Server failed to save recording');
