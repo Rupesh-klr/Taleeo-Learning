@@ -844,11 +844,167 @@ function renderAdminPage(page) {
   else if (page === 'admin-documents') renderAdminDocuments();
   else if (page === 'admin-recordings') renderAdminRecordings();
   else if (page === 'admin-attendance') renderAdminAttendance();
-  else if (page === 'admin-certificates') renderAdminCertificates();// Add this line so Admin can view the curriculum
-  // else if (page === 'admin-curriculum') renderStudentCourse();
+  else if (page === 'admin-certificates') renderAdminCertificates();
   else if (page === 'admin-curriculum') renderAdminCurriculum();
   else if (page === 'user-profile') renderUserProfile();
+  else if (page === 'my-community') renderMyCommunityPage();
+  else renderComingSoonPage();
 }
+
+window.renderComingSoonPage = function() {
+  const mc = document.getElementById('main-content');
+  if (mc) {
+    mc.innerHTML = `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:80vh; text-align:center;">
+        <div style="font-size:4rem; margin-bottom:20px;">🚀</div>
+        <h2 style="color:white; font-size:1.8rem; margin-bottom:10px;">Coming Soon!</h2>
+        <p style="color:var(--dim); font-size:1rem; max-width:400px;">This community module is currently under development. Stay tuned for exciting updates!</p>
+      </div>
+    `;
+  }
+};
+
+// Local store for likes so it persists during session
+if (!window.communityLikes) window.communityLikes = { 1: false, 2: false, 3: false, 4: false };
+
+window.renderMyCommunityPage = function(activeTab = 'students') {
+  const mc = document.getElementById('main-content');
+  
+  // Sample posts data
+  const posts = {
+    students: [
+      { id: 1, author: 'Alex Johnson', role: 'Student', content: 'Just finished my first React project! So excited to share it with everyone here. #study #welcome #excited', likes: window.communityLikes[1] ? 1 : 0 },
+      { id: 2, author: 'Maria Garcia', role: 'Student', content: 'Does anyone have good resources for learning CSS Grid? Trying to wrap my head around it. #css #help', likes: window.communityLikes[2] ? 5 : 4 }
+    ],
+    trainers: [
+      { id: 3, author: 'David Smith', role: 'Trainer', content: 'Great session today everyone! Don\'t forget to complete your assignments by Friday. #update #assignment', likes: window.communityLikes[3] ? 12 : 11 }
+    ],
+    admin: [
+      { id: 4, author: 'System Admin', role: 'Admin', content: 'Platform maintenance scheduled for this weekend. Please save your work! #maintenance #alert', likes: window.communityLikes[4] ? 3 : 2 }
+    ]
+  };
+
+  const activePosts = posts[activeTab] || [];
+
+  mc.innerHTML = `
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="topbar-title">My Community</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="form-group" style="margin:0;">
+          <input class="form-input" placeholder="🔍 Search posts..." style="width:250px;">
+        </div>
+      </div>
+    </div>
+    
+    <div class="card anim-in" style="margin-bottom: 20px;">
+      <div style="display:flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; overflow-x: auto; gap: 15px;">
+        <button class="btn btn-sm ${activeTab === 'students' ? 'btn-v' : 'btn-out'}" style="border:none; border-bottom: ${activeTab === 'students' ? '2px solid var(--v1)' : 'none'}; border-radius:0; padding-bottom: 10px; background:transparent;" onclick="renderMyCommunityPage('students')">Posts from Students</button>
+        <button class="btn btn-sm ${activeTab === 'trainers' ? 'btn-v' : 'btn-out'}" style="border:none; border-bottom: ${activeTab === 'trainers' ? '2px solid var(--v1)' : 'none'}; border-radius:0; padding-bottom: 10px; background:transparent;" onclick="renderMyCommunityPage('trainers')">Posts from Trainers</button>
+        <button class="btn btn-sm ${activeTab === 'admin' ? 'btn-v' : 'btn-out'}" style="border:none; border-bottom: ${activeTab === 'admin' ? '2px solid var(--v1)' : 'none'}; border-radius:0; padding-bottom: 10px; background:transparent;" onclick="renderMyCommunityPage('admin')">Posts from admin</button>
+      </div>
+      
+      <div style="display:flex; flex-direction:column; gap:15px;">
+        ${activePosts.map(p => `
+          <div style="border: 1px solid var(--border); border-radius: 12px; padding: 15px; background: var(--bg2);">
+            <div style="display:flex; align-items:center; gap: 10px; margin-bottom: 10px;">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--v1), var(--b1)); display:flex; align-items:center; justify-content:center; font-weight:bold; color:white; font-size: 1.2rem;">
+                ${p.author[0]}
+              </div>
+              <div>
+                <div style="font-weight: 600; color: white;">${p.author}</div>
+                <div style="font-size: 0.75rem; color: var(--dim);">${p.role}</div>
+              </div>
+            </div>
+            <div style="color: var(--gr); line-height: 1.5; margin-bottom: 15px; font-size: 0.9rem;">
+              ${p.content.replace(/(#[a-zA-Z0-9_]+)/g, '<span style="color: var(--v2); cursor:pointer;">$1</span>')}
+            </div>
+            <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-sm ${window.communityLikes[p.id] ? 'btn-v' : 'btn-out'}" onclick="toggleCommunityLike(${p.id}, '${activeTab}')" style="display:flex; align-items:center; gap:5px;">
+                ${window.communityLikes[p.id] ? '❤️ Liked' : '🤍 Like'} <span style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">${p.likes}</span>
+              </button>
+              <button class="btn btn-sm btn-out" onclick="sharePostGeneral(${p.id}, \`${p.content.replace(/`/g, "'")}\`)" style="display:flex; align-items:center; gap:5px;">
+                🔗 Share
+              </button>
+              <button class="btn btn-sm" style="background:#0a66c2; color:white; border:none; display:flex; align-items:center; gap:5px;" onclick="sharePostLinkedIn(${p.id}, \`${p.content.replace(/`/g, "'")}\`)">
+                💼 LinkedIn
+              </button>
+            </div>
+          </div>
+        `).join('')}
+        ${activePosts.length === 0 ? '<div style="color:var(--dim); text-align:center; padding: 20px;">No posts available yet.</div>' : ''}
+      </div>
+    </div>
+  `;
+};
+
+window.sharePostGeneral = async function(postId, postContent) {
+  const url = window.location.origin + window.location.pathname + '?post=' + postId;
+  const text = `Check out this post on TALeeO Community:\n"${postContent}"\n\n`;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'TALeeO Community Post',
+        text: text,
+        url: url
+      });
+    } catch (err) {
+      console.log('Error sharing:', err);
+    }
+  } else {
+    navigator.clipboard.writeText(text + url);
+    showToast('Link copied to clipboard!', '🔗');
+  }
+};
+
+window.sharePostLinkedIn = function(postId, postContent) {
+  const url = window.location.origin + window.location.pathname + '?post=' + postId;
+  const companyUrl = "https://www.linkedin.com/company/taleeo-learning-school/";
+  const textToCopy = `"${postContent}"\n\nRead more at ${url}\n\n@Taleeo Learning School of Business ${companyUrl}`;
+  
+  // Also copy to clipboard as a backup
+  navigator.clipboard.writeText(textToCopy);
+  
+  setTimeout(() => {
+    // This endpoint actively opens the "Create a post" modal and pre-fills the text!
+    const linkedinShareUrl = `https://www.linkedin.com/feed/?shareActive=true&text=${encodeURIComponent(textToCopy)}`;
+    window.open(linkedinShareUrl, '_blank');
+  }, 300);
+};
+
+window.toggleCommunityLike = function(postId, activeTab) {
+  // Local state update
+  window.communityLikes[postId] = !window.communityLikes[postId];
+  
+  // Re-render to update UI
+  renderMyCommunityPage(activeTab);
+  
+  // Remote API call block (Commented out as requested)
+  /*
+  fetch(\`\${BACKEND_URL}/api/community/posts/\${postId}/like\`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({ liked: window.communityLikes[postId] })
+  })
+  .then(res => res.json())
+  .then(data => console.log("Like updated remotely", data))
+  .catch(err => console.error("Failed to update like", err));
+  */
+};
+
+// Check for deep link on load to open community page
+setTimeout(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('post') && typeof navTo === 'function') {
+      navTo('my-community', null);
+  }
+}, 1500);
 
 async function renderAdminDashboard() {
   showLoading();

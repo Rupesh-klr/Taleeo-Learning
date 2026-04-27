@@ -204,6 +204,8 @@ function renderStudentPage(page) {
   else if (page === 'student-attendance') renderStudentAttendance();
   else if (page === 'student-certificate') renderStudentCertificate();
   else if (page === 'user-profile') renderUserProfile();
+  else if (page === 'my-community') renderMyCommunityPage();
+  else renderComingSoonPage();
 }
 
 async function renderStudentDashboard() {
