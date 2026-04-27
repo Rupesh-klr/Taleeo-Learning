@@ -1481,9 +1481,9 @@ async function renderAdminStudents() {
         }
       }
     });
-    console.log(studentBatches);
-    console.log(s.enrolledBatches);
-    console.log(batches);
+    // console.log(studentBatches);
+    // console.log(s.enrolledBatches);
+    // console.log(batches);
 
     return `<tr>
               <td><div style="display:flex;align-items:center;gap:9px;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;">${s.name[0]}</div><span style="font-weight:600;">${s.name}</span></div></td>
@@ -1491,11 +1491,11 @@ async function renderAdminStudents() {
               <td style="color:var(--muted);">${s.phone || '—'}</td>
               <td>
                 ${studentBatches.length > 0
-        ? studentBatches.map(b => {
+        ? `<div style="max-height: 65px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px;">` + studentBatches.map(b => {
           // Safely encode zoom link or set to empty
           const zoomLink = (b.zoomDetails && b.zoomDetails.link) ? encodeURIComponent(b.zoomDetails.link) : '';
-          return `<span class="badge badge-v" style="margin-bottom: 4px; display: inline-flex; align-items: center; gap: 5px;">${b.name.length > 20 ? b.name.substring(0, 20) + '...' : b.name} <span style="cursor:pointer;" onclick="showCourseInfo('${b.courseId}', decodeURIComponent('${zoomLink}'))" title="View Course & Batch Details">ℹ️</span></span>`;
-        }).join('<br/>')
+          return `<span class="badge badge-v" style="display: inline-flex; align-items: center; justify-content: space-between; gap: 5px; width: fit-content; min-width: 140px;">${b.name.length > 20 ? b.name.substring(0, 20) + '...' : b.name} <span style="cursor:pointer; background: rgba(255,255,255,0.1); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 10px;" onclick="showCourseInfo('${b.courseId}', decodeURIComponent('${zoomLink}'))" title="View Course & Batch Details">ℹ️</span></span>`;
+        }).join('') + `</div>`
         : '<span class="badge badge-r">No Batch</span>'}
               </td>
               <td style="font-family:monospace;font-size:.78rem;color:var(--v2);">${s.password}</td>
@@ -1614,7 +1614,8 @@ async function renderAdminDocuments() {
           </div>
           <span class="badge ${colors[d.type] || 'badge-v'}" style="margin-bottom:10px;">${d.type}</span>
           <div style="font-size:.68rem;color:var(--dim);margin-bottom:12px;">Uploaded: ${d.uploadedAt}</div>
-          <div style="display:flex;gap:7px;">
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <button class="btn btn-v btn-sm" onclick="openDocumentIframe('${d.url}', '${d.title}')">View 👁</button>
             <a href="${d.url}" target="_blank" class="btn btn-out btn-sm">Open ↗</a>
             <button class="btn btn-b btn-sm" onclick="openEditDocument('${d.id}')">Edit</button>
             <button class="btn btn-danger btn-sm" onclick="deleteDoc('${d.id}')">Delete</button>
@@ -1628,6 +1629,40 @@ async function renderAdminDocuments() {
     </div>
   `;
 }
+
+window.openDocumentIframe = function(url, title) {
+  let iframeUrl = url;
+  // Google Drive prevents iframing /view links. We must convert them to /preview
+  if (iframeUrl.includes('drive.google.com/file/d/')) {
+    iframeUrl = iframeUrl.replace(/\/view.*$/, '/preview');
+  }
+
+  let modalHtml = `
+    <div class="modal-overlay" id="modal-document-viewer">
+      <div class="modal" style="width: 90vw; height: 90vh; max-width: 1200px; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div class="modal-title" style="margin: 0; color: white;">${title}</div>
+          <button class="modal-close" style="position: static;" onclick="closeModal('modal-document-viewer')">✕</button>
+        </div>
+        <div style="flex: 1; border-radius: 8px; overflow: hidden; background: #fff;">
+          <iframe src="${iframeUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const existingModal = document.getElementById('modal-document-viewer');
+  if (existingModal) {
+    existingModal.outerHTML = modalHtml;
+  } else {
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+  
+  // Use a slight timeout to ensure DOM recognizes the new element before animating class
+  setTimeout(() => {
+    document.getElementById('modal-document-viewer').classList.add('open');
+  }, 10);
+};
 
 async function renderAdminRecordings() {
   var mc = document.getElementById('main-content');
@@ -1685,7 +1720,8 @@ async function renderAdminRecordings() {
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span class="badge badge-b">${batch.name.substring(0, 18)}...</span>
-              <a href="${r.url}" target="_blank" class="btn btn-out btn-sm">Watch ▶</a>
+              <button class="btn btn-v btn-sm" onclick="openRecordingPlayer('${r.url}', '${r.title}', '${r.passcode || ''}')">View 👁</button>
+<a href="${r.url}" target="_blank" class="btn btn-out btn-sm">Watch ▶</a>
               <button class="btn btn-b btn-sm" onclick="openEditRecording('${r.id}')">Edit</button>
               <button class="btn btn-danger btn-sm" onclick="deleteRec('${r.id}')">Delete</button>
             </div>
@@ -2699,3 +2735,70 @@ function generateBulkCertificates() {
   });
   showToast('Generating ' + count + ' certificates...', '🏆');
 }
+window.openRecordingPlayer = function(url, title, passcode = '') {
+  let embedUrl = url;
+
+  // Handle Zoom passcode
+  if (url.includes('zoom.us/rec/') && passcode) {
+    // Append passcode if not present
+    if (!embedUrl.includes('pwd=')) {
+      embedUrl += (embedUrl.includes('?') ? '&' : '?') + 'pwd=' + encodeURIComponent(passcode);
+    }
+  }
+
+  // Handle Google Drive preview
+  if (embedUrl.includes('drive.google.com/file/d/')) {
+    embedUrl = embedUrl.replace(/\/view.*$/, '/preview');
+  }
+
+  // Handle YouTube links (convert to embed)
+  if (/youtu\.?be/.test(embedUrl)) {
+    // Convert youtu.be or youtube.com/watch?v= to embed
+    embedUrl = embedUrl
+      .replace('watch?v=', 'embed/')
+      .replace('youtu.be/', 'youtube.com/embed/');
+  }
+
+  // Modal HTML
+  let modalHtml = `
+    <div class="modal-overlay" id="modal-recording-player">
+      <div class="modal" style="width:90vw;max-width:900px;height:80vh;display:flex;flex-direction:column;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="modal-title" style="margin:0;color:white;">${title}</div>
+          <button class="modal-close" onclick="closeModal('modal-recording-player')">✕</button>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#000;border-radius:8px;overflow:hidden;">
+          ${embedUrl.match(/\.(mp4|webm|ogg)$/i)
+            ? `<video id="custom-video-player" src="${embedUrl}" controls style="width:100%;height:100%;max-height:60vh;background:#000;" controlsList="nodownload"></video>`
+            : `<iframe src="${embedUrl}" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>`
+          }
+        </div>
+        <div style="margin-top:10px;text-align:right;">
+          <button class="btn btn-out btn-sm" onclick="downloadRecording('${embedUrl}')">Download ⬇️</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Insert or replace modal
+  const existingModal = document.getElementById('modal-recording-player');
+  if (existingModal) {
+    existingModal.outerHTML = modalHtml;
+  } else {
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  setTimeout(() => {
+    document.getElementById('modal-recording-player').classList.add('open');
+  }, 10);
+};
+
+// Download handler (for direct video links)
+window.downloadRecording = function(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};

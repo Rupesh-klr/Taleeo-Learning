@@ -204,7 +204,6 @@ function renderStudentPage(page) {
   else if (page === 'student-attendance') renderStudentAttendance();
   else if (page === 'student-certificate') renderStudentCertificate();
   else if (page === 'user-profile') renderUserProfile();
-  else if (page === 'my-community') renderMyCommunityPage();
   else renderComingSoonPage();
 }
 
@@ -441,6 +440,8 @@ async function renderStudentRecordings() {
                 </div>
               </div>
             </div>
+            <button class="btn btn-v btn-sm" onclick="openRecordingPlayer('${r.url}', '${r.title}', '${r.passcode || ''}')">View 👁</button>
+
             <a href="${r.url || '#'}" target="_blank" class="btn btn-v btn-sm">▶ Watch Recording</a>
           </div>
         </div>`;
@@ -492,13 +493,50 @@ async function renderStudentDocuments() {
           <div style="font-size:.72rem;color:var(--muted);margin-bottom:8px;">${d.module || 'General'}</div>
           <span class="badge ${colors[d.type] || 'badge-v'}" style="margin-bottom:10px;">${d.type || 'reference'}</span>
           <br>
-          <a href="${d.url || '#'}" target="_blank" class="btn btn-v btn-sm" style="margin-top:10px;">Open ↗</a>
+          <div style="display:flex;gap:7px;margin-top:10px;">
+            <button class="btn btn-v btn-sm" onclick="openDocumentIframe('${d.url}', '${d.title}')">View 👁</button>
+            <a href="${d.url || '#'}" target="_blank" class="btn btn-out btn-sm">Open ↗</a>
+          </div>
         </div>`;
       }).join('')}
       ${docs.length === 0 ? '<div class="card" style="text-align:center;padding:34px;"><div style="font-size:2rem;margin-bottom:10px;">📚</div><div style="color:var(--muted);">No documents available yet.</div></div>' : ''}
     </div>
   `;
 }
+
+window.openDocumentIframe = window.openDocumentIframe || function(url, title) {
+  let iframeUrl = url;
+  // Google Drive prevents iframing /view links. We must convert them to /preview
+  if (iframeUrl.includes('drive.google.com/file/d/')) {
+    iframeUrl = iframeUrl.replace(/\/view.*$/, '/preview');
+  }
+
+  let modalHtml = `
+    <div class="modal-overlay" id="modal-document-viewer">
+      <div class="modal" style="width: 90vw; height: 90vh; max-width: 1200px; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div class="modal-title" style="margin: 0; color: white;">${title}</div>
+          <button class="modal-close" style="position: static;" onclick="closeModal('modal-document-viewer')">✕</button>
+        </div>
+        <div style="flex: 1; border-radius: 8px; overflow: hidden; background: #fff;">
+          <iframe src="${iframeUrl}" style="width: 100%; height: 100%; border: none;"></iframe>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  const existingModal = document.getElementById('modal-document-viewer');
+  if (existingModal) {
+    existingModal.outerHTML = modalHtml;
+  } else {
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+  
+  setTimeout(() => {
+    document.getElementById('modal-document-viewer').classList.add('open');
+  }, 10);
+};
+
 
 function filterDocs(module, el) {
   document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
