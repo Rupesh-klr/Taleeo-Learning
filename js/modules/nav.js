@@ -5,9 +5,16 @@
 const FRONTEND_MODULES = {
   "admin": [
     { id: 'admin-dashboard', icon: '📊', label: 'Dashboard', section: 'Overview' },
-    { id: 'admin-batches', icon: '🗂️', label: 'Batches', section: 'Management' },
-    { id: 'admin-students', icon: '👥', label: 'Students', section: 'Management' },
-    { id: 'admin-curriculum', icon: '📚', label: 'Course Curriculum', section: 'Overview' }, // New Admin Button
+    { 
+      id: 'admin-curriculum', 
+      icon: '📚', 
+      label: 'Course Curriculum', 
+      section: 'Overview',
+      children: [
+        { id: 'admin-batches', icon: '🗂️', label: 'Batches' },
+        { id: 'admin-students', icon: '👥', label: 'Students' }
+      ]
+    },
     { id: 'admin-documents', icon: '📄', label: 'Documents', section: 'Management' },
     { id: 'admin-recordings', icon: '🎥', label: 'Recordings', section: 'Management' },
     { id: 'admin-attendance', icon: '✅', label: 'Attendance', section: 'Tools' },
@@ -30,9 +37,22 @@ FRONTEND_MODULES["superadmin"] = FRONTEND_MODULES["admin"];
 FRONTEND_MODULES["faculty"] = FRONTEND_MODULES["admin"]; 
 FRONTEND_MODULES["staff"] = FRONTEND_MODULES["admin"];
 FRONTEND_MODULES["technical-team"] = FRONTEND_MODULES["admin"];
+
+window.toggleSubMenu = function(id) {
+  var sub = document.getElementById('submenu-' + id);
+  var parentItem = document.querySelector('#parent-' + id + ' .sb-item .arrow-mark');
+  if (sub && sub.style.display === 'none') {
+    sub.style.display = 'block';
+    if(parentItem) parentItem.style.transform = 'rotate(180deg)';
+  } else if (sub) {
+    sub.style.display = 'none';
+    if(parentItem) parentItem.style.transform = 'rotate(0deg)';
+  }
+};
+
 /* ═══════════════════════════════════════════════════════
    SHELL BUILDER (Dynamic RBAC UI)
-═══════════════════════════════════════════════════════ */
+   ═══════════════════════════════════════════════════════ */
 function buildShell() {
   var u = _currentUser;
   
@@ -67,7 +87,24 @@ function buildShell() {
     
     // Make the first item active by default
     var activeClass = index === 0 ? 'active' : '';
-    navHTML += `<div class="sb-item ${activeClass}" onclick="navTo('${mod.id}', this)"><span class="sb-item-icon">${mod.icon}</span>${mod.label}</div>`;
+    
+    if (mod.children) {
+      navHTML += `
+        <div class="sb-item-parent" id="parent-${mod.id}">
+          <div class="sb-item ${activeClass}" onclick="toggleSubMenu('${mod.id}'); navTo('${mod.id}', this)">
+            <span class="sb-item-icon">${mod.icon}</span>${mod.label}
+            <span class="arrow-mark" style="float: right; transition: transform 0.3s; font-size: 0.8rem; margin-top: 3px;">▼</span>
+          </div>
+          <div class="sb-submenu" id="submenu-${mod.id}" style="display: none; padding-left: 10px; background: rgba(0,0,0,0.02); border-left: 2px solid var(--v1); margin-left: 15px; margin-top: 5px; margin-bottom: 5px;">`;
+      
+      mod.children.forEach(function(child) {
+        navHTML += `<div class="sb-item" onclick="navTo('${child.id}', this)" style="padding: 10px 15px; font-size: 0.85rem;"><span class="sb-item-icon">${child.icon}</span>${child.label}</div>`;
+      });
+      
+      navHTML += `</div></div>`;
+    } else {
+      navHTML += `<div class="sb-item ${activeClass}" onclick="navTo('${mod.id}', this)"><span class="sb-item-icon">${mod.icon}</span>${mod.label}</div>`;
+    }
   });
 
   nav.innerHTML = navHTML;
