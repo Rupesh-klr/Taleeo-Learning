@@ -25,14 +25,25 @@
 
   <div class="toast" id="toast"><span class="toast-icon">✅</span><span id="toast-msg"></span></div>
 
-  <div id="login-page" class="full-page active">
+  <div id="login-page" class="full-page active login-flex">
+    <div class="login-left">
+    <!-- Add your interesting image/animation here -->
+    <div class="login-visual">
+      <img src="./assets/img/leftside-login-img.webp" alt="Learning Visual" class="login-img" />
+      <!-- You can add animation or SVG here -->
+    </div>
+    <div class="login-caption">
+      <h2>See everyday moments from your learning journey.</h2>
+      <p>Join your peers and unlock new skills!</p>
+    </div>
+  </div>
+  <div class="login-right">
     <div class="login-wrap anim-in">
       <div class="login-logo">
         <div class="login-logo-text">TALeeO LMS</div>
         <div class="login-logo-sub">Learning Management System</div>
       </div>
       <div class="login-card">
-
         <div id="step-login">
           <div class="login-title">Welcome back 👋</div>
           <div class="login-sub">Sign in to your account to continue learning.</div>
@@ -78,7 +89,6 @@
           <p style="text-align:center;margin-top:16px;font-size:.75rem;color:var(--dim);">New student? You'll receive
             credentials via email when enrolled.</p>
         </div>
-
         <div id="step-otp" style="display:none;">
           <div class="login-title">Verify Your Number 📱</div>
           <div class="login-sub" id="otp-sub">Enter the 6-digit OTP sent to your registered mobile number.</div>
@@ -95,9 +105,9 @@
           <p style="text-align:center;margin-top:14px;font-size:.74rem;color:var(--dim);">Demo OTP: <strong
               style="color:var(--v2);">123456</strong></p>
         </div>
-
       </div>
     </div>
+  </div>
   </div>
 
   <div id="app-shell">
