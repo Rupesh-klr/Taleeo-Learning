@@ -47,9 +47,31 @@
               <input type="password" class="form-input" id="login-pass" placeholder="Enter your password"
                 onkeydown="if(event.key==='Enter')doLogin()" style="padding-right: 45px;">
               <button type="button"
-                onclick="const p=document.getElementById('login-pass'); if(p.type==='password'){p.type='text'; this.textContent='🙈';}else{p.type='password'; this.textContent='👁️';}"
+                id="toggle-pass-visibility"
+                onclick="togglePasswordVisibility('login-pass', 'toggle-pass-visibility')"
                 style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0; outline: none; opacity: 0.7; transition: opacity 0.2s;"
-                onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">👁️</button>
+                onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                <span id="toggle-pass-icon">
+                  <!-- Eye SVG -->
+                  <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </span>
+              </button>
+              <script>
+                function togglePasswordVisibility(inputId, btnId) {
+                  const input = document.getElementById(inputId);
+                  const btn = document.getElementById(btnId);
+                  const iconSpan = btn.querySelector('#toggle-pass-icon');
+                  if (input.type === 'password') {
+                    input.type = 'text';
+                    // Change to eye-slash SVG
+                    iconSpan.innerHTML = '<svg id="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"/><path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47"/></svg>';
+                  } else {
+                    input.type = 'password';
+                    // Change to normal eye SVG
+                    iconSpan.innerHTML = '<svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+                  }
+                }
+              </script>
             </div>
           </div>
           <button class="btn btn-v btn-full" onclick="doLogin()">Sign In →</button>

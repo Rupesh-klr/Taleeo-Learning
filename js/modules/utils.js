@@ -326,10 +326,21 @@ async function resetPassword() {
       const input = document.getElementById('old-pass');
       const btn = document.getElementById('old-pass-eye');
       if (!input || !btn) return;
-
-      const isHidden = input.type === 'password';
-      input.type = isHidden ? 'text' : 'password';
-      btn.textContent = isHidden ? '🙈' : '👁';
+      let iconSpan = btn.querySelector('.toggle-old-pass-icon');
+      if (!iconSpan) {
+        // Create span if not present (for backward compatibility)
+        iconSpan = document.createElement('span');
+        iconSpan.className = 'toggle-old-pass-icon';
+        btn.textContent = '';
+        btn.appendChild(iconSpan);
+      }
+      if (input.type === 'password') {
+        input.type = 'text';
+        iconSpan.innerHTML = '<svg id="eye-slash-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.81 21.81 0 0 1 5.06-6.06M1 1l22 22"/><path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47"/></svg>';
+      } else {
+        input.type = 'password';
+        iconSpan.innerHTML = '<svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+      }
     }
 
 function renderUserProfile() {
@@ -359,7 +370,7 @@ function renderUserProfile() {
                 <label class="form-label">Old Password</label>
                 <div style="position:relative;">
                   <input type="password" class="form-input" id="old-pass" placeholder="Enter old password" style="padding-right:44px;">
-                  <button id="old-pass-eye" type="button" onclick="toggleOldPasswordVisibility()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;">👁</button>
+                  <button id="old-pass-eye" type="button" onclick="toggleOldPasswordVisibility()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;"> <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
                 </div>
               </div>
               <div class="form-group">

@@ -8,19 +8,41 @@ const FRONTEND_MODULES = {
     {
       id: 'admin-curriculum',
       icon: '📚',
-      label: 'Course Curriculum',
+      label: 'Student Portfolio',
       section: 'Overview',
       children: [
         { id: 'admin-batches', icon: '🗂️', label: 'Batches' },
         { id: 'admin-students', icon: '👥', label: 'Students' },
         { id: 'admin-documents', icon: '📄', label: 'Documents' },
         { id: 'admin-recordings', icon: '🎥', label: 'Recordings' },
+         { id: 'admin-certificates', icon: '🏆', label: 'Certificates' },
+      ]
+    },
+    {
+      id: 'admin-trainers',
+      icon: '📚',
+      label: 'Trainers Portfolio',
+      section: 'Overview',
+      children: [
+        { id: 'trainer-portfolio', icon: '🗂️', label: 'Trainer-portfolio' },
+        { id: 'trainer-details', icon: '👥', label: 'Trainer-details' },
+      ]
+    },
+
+    {
+      id: 'admin-chat-module',
+      icon: '📚',
+      label: 'Team Chat',
+      section: 'Teamchat',
+      children: [
+        { id: 'Team-chat', icon: '🗂️', label: 'Team chat' },
+        { id: 'Recent-chats', icon: '👥', label: 'Recent-chats' },
       ]
     },
     // { id: 'admin-documents', icon: '📄', label: 'Documents', section: 'Management' },
     // { id: 'admin-recordings', icon: '🎥', label: 'Recordings', section: 'Management' },
-    { id: 'admin-attendance', icon: '✅', label: 'Attendance', section: 'Tools' },
-    { id: 'admin-certificates', icon: '🏆', label: 'Certificates', section: 'Tools' },
+    // { id: 'admin-attendance', icon: '✅', label: 'Attendance', section: 'Tools' },
+    // { id: 'admin-certificates', icon: '🏆', label: 'Certificates', section: 'Tools' },
     { id: 'user-profile', icon: '👤', label: 'My Profile', section: 'Settings' },
     { id: 'my-community', icon: '🌐', label: 'My Community', section: 'My Community' },
     { id: 'admin-announcements', icon: '📢', label: 'Announcements', section: 'My Community' },

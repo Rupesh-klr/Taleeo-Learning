@@ -588,7 +588,7 @@ async function saveBatchAction(batchId, courseId) {
     type: document.getElementById('in-b-type').value,
     start: document.getElementById('in-b-start').value,
     end: document.getElementById('in-b-end').value,
-    timing: document.getElementById('in-b-timing').value,
+    // timing: document.getElementById('in-b-timing').value,
     courseId: courseId,
     zoomDetails: {
       link: document.getElementById('in-b-zoom').value,
@@ -1353,7 +1353,7 @@ async function handleSaveBatch() {
   let res = await saveBatchAction(batchId, courseId);
   console.log('Batch save action result:', res);
   debugger;
-  await linkBatchToCourse(res.batch.id, courseId);
+  await linkBatchToCourse(res.batchId, courseId);
 }
 async function linkBatchToCourse(batchId, courseId) {
   try {
@@ -2346,7 +2346,7 @@ async function createBatch() {
   var type = document.getElementById('new-batch-type').value;
   var start = document.getElementById('new-batch-start').value;
   var end = document.getElementById('new-batch-end').value;
-  var timing = document.getElementById('new-batch-timing').value.trim() || 'TBD';
+  // var timing = document.getElementById('new-batch-timing').value.trim() || 'TBD';
   var zoom = document.getElementById('new-batch-zoom').value.trim() || '#';
   var zoomId = document.getElementById('new-batch-zoom-id').value.trim() || 'TBD';
   var zoomPass = document.getElementById('new-batch-zoom-pass').value.trim() || 'TBD';
@@ -2361,7 +2361,7 @@ async function createBatch() {
     type: type,
     start: start,
     end: end,
-    timing: timing,
+    // timing: timing,
     zoomLink: zoom,
     zoomId: zoomId,
     zoomPass: zoomPass
@@ -2394,7 +2394,9 @@ async function createBatch() {
   }
 
   closeModal('modal-add-batch');
-  clearInputs(['new-batch-name', 'new-batch-start', 'new-batch-end', 'new-batch-timing', 'new-batch-zoom', 'new-batch-zoom-id', 'new-batch-zoom-pass']);
+  clearInputs(['new-batch-name', 'new-batch-start', 'new-batch-end', 
+    // 'new-batch-timing',
+     'new-batch-zoom', 'new-batch-zoom-id', 'new-batch-zoom-pass']);
   renderAdminBatches();
 }
 
